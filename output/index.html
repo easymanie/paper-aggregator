@@ -1,0 +1,2594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Econ/Finance Paper Aggregator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: #1a1a2e;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .controls {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .controls input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .controls select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .controls label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .stats {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .paper-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .paper {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: box-shadow 0.2s;
+        }
+
+        .paper:hover {
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+
+        .paper.read {
+            opacity: 0.6;
+        }
+
+        .paper-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 8px;
+        }
+
+        .paper-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a1a2e;
+            text-decoration: none;
+            flex: 1;
+        }
+
+        .paper-title:hover {
+            color: #4a4a8a;
+        }
+
+        .paper-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .paper-actions button {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .paper-actions button:hover {
+            background: #f0f0f0;
+        }
+
+        .paper-actions button.starred {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .paper-actions button.marked-read {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .paper-authors {
+            color: #1565c0;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .paper-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .paper-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .tag-source {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .paper-doi {
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .paper-summary {
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-top: 8px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+            }
+
+            .controls input[type="text"],
+            .controls select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>India Econ/Finance Paper Aggregator</h1>
+            <p>91 papers from 14 sources | Last updated: 2026-01-13 10:45</p>
+        </header>
+
+        <div class="controls">
+            <input type="text" id="search" placeholder="Search papers...">
+
+            <select id="source-filter">
+                <option value="">All Sources</option>
+                
+                <option value="IIMB Management Review">IIMB Management Review</option>
+                
+                <option value="Journal of Development Economics">Journal of Development Economics</option>
+                
+                <option value="Journal of Economic Behavior & Organization">Journal of Economic Behavior & Organization</option>
+                
+                <option value="Journal of International Economics">Journal of International Economics</option>
+                
+                <option value="Journal of Management Studies">Journal of Management Studies</option>
+                
+                <option value="Management Science">Management Science</option>
+                
+                <option value="NBER">NBER</option>
+                
+                <option value="NCAER">NCAER</option>
+                
+                <option value="NIPFP">NIPFP</option>
+                
+                <option value="RBI">RBI</option>
+                
+                <option value="Review of Development Economics">Review of Development Economics</option>
+                
+                <option value="Review of Financial Studies">Review of Financial Studies</option>
+                
+                <option value="Vikalpa">Vikalpa</option>
+                
+                <option value="World Development">World Development</option>
+                
+            </select>
+
+            <label>
+                <input type="checkbox" id="hide-read"> Hide read
+            </label>
+
+            <label>
+                <input type="checkbox" id="show-starred"> Starred only
+            </label>
+
+            <span class="stats" id="visible-count"></span>
+        </div>
+
+        <div class="paper-list" id="paper-list">
+            
+            <article class="paper" data-id="8" data-source="Review of Development Economics" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://onlinelibrary.wiley.com/doi/10.1111/rode.13268?af=R" target="_blank" class="paper-title">COVID‐19 and the Unequal Distribution of Poverty Risks: Evidence From Urban India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(8)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(8)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Archana Dang, 
+Mausumi Das, 
+Indrani Gupta</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Review of Development Economics</span>
+                    
+                    <span>2026-01-07</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1111/rode.13268</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Review of Development Economics, Volume 30, Issue 1, Page 125-139, February 2026.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="9" data-source="Review of Development Economics" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://onlinelibrary.wiley.com/doi/10.1111/rode.70016?af=R" target="_blank" class="paper-title">Do Compulsory Schooling Laws Affect Fertility Behaviors and Marriages? Evidence From India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(9)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(9)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Sandipa Bhattacharjee</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Review of Development Economics</span>
+                    
+                    <span>2026-01-07</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1111/rode.70016</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Review of Development Economics, Volume 30, Issue 1, Page 549-572, February 2026.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="16" data-source="Journal of Management Studies" data-category="management">
+                <div class="paper-header">
+                    <a href="https://onlinelibrary.wiley.com/doi/10.1111/joms.13271?af=R" target="_blank" class="paper-title">Embodied Territories: The Gendered‐Classed Economies of Entrepreneurship in India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(16)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(16)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Vijayta Doshi, 
+Kathleen Riach, 
+Srinivas Venugopal</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Journal of Management Studies</span>
+                    
+                    <span>2025-12-15</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1111/joms.13271</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Journal of Management Studies, Volume 63, Issue 1, Page 133-161, January 2026.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="26" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251394102?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Factors Affecting Going Public Decision in Sri Lanka: Structural Equation Modelling Approach</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(26)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(26)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Mohamed Ismail Mohamed Riyath, Debehaarage Athula Indunil Dayaratne, Athambawa Jahfer</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-11-27</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251394102</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Ahead of Print. This study aims to identify the factors that influence the decision of companies to go public in Sri Lanka, where many qualified companies remain private despite meeting the listing requirements.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="27" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251389732?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">From a Cash-heavy to a Cashless Economy: How UPI Is Revolutionizing Rural India’s Ease-of-doing Business</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(27)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(27)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Pritish Kumar Sahu, Anwesha Chakraborty, Pratyush Banerjee</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-11-25</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251389732</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Ahead of Print. Digital payments have emerged as the predominant payment method in India since the introduction of the unified payments interface (UPI) in 2016.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="30" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251379212?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Exploring the Potential of an AI-based Recruitment System for Industry 4.0 Landscape: A Surveybased Study</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(30)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(30)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Vrunda Gadesha, Keyur D. Joshi</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-11-25</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251379212</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Ahead of Print. This research examines the adoption of Industry 4.0 standards in Indian companies’ recruitment processes, focusing on IT, legal, finance and higher education sectors in Tier 1 cities.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="10" data-source="Review of Development Economics" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://onlinelibrary.wiley.com/doi/10.1111/rode.70089?af=R" target="_blank" class="paper-title">Urban Amenities, Productive Performance and Global Value Chain Activities of Indian Firms</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(10)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(10)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Ketan Reddy, 
+Subash Sasidharan, 
+Shandre Thangavelu</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Review of Development Economics</span>
+                    
+                    <span>2025-11-12</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1111/rode.70089</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Review of Development Economics, EarlyView.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="25" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251388156?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Logistic Capabilities as a Performance Enabler for Online Retailers</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(25)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(25)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Jagdish Bhagwat, Rekha Attri</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-11-12</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251388156</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Ahead of Print. The digital revolution has significantly contributed towards the growth of online retail, and logistics play a pivotal role in the online retail loop.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="29" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251389733?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">The Future of Purpose-driven Branding</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(29)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(29)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Pramod Chandra</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-11-12</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251389733</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Ahead of Print.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="24" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251384725?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Bridging the Digital Divide: An Exploration of Empowerment Through Digital India Initiative</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(24)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(24)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Subhalaxmi Mohapatra, Diti Vyas, Samantak Chakraborty</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-11-06</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251384725</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Ahead of Print. The study focuses on the empowerment of the digital platform users in India under the influence of the Digital India initiative.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="20" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251374390?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Predictors of Innovation Adoption by Small Healthcare Firms in India: The Case of Web Accessibility Standards</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(20)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(20)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Krishna Jayakar, Smeeta Mishra</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-09-19</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251374390</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Volume 50, Issue 4, Page 310-321, October-December. Technology innovation and adoption are key economic imperatives for growth in India’s economy, and especially in the healthcare sector.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="19" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251361990?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Effect of Edtech Start-ups on Students’ Performance: Selected Evidence from Indian Cities</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(19)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(19)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Amrin Fakih, Kala Seetharam Sridhar</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-08-25</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251361990</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Volume 50, Issue 4, Page 389-404, October-December. This paper attempts to examine how startups improve the performance of students and influence their affective elements towards studies.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="18" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251357663?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Critical Factors of Mobile Payment Usage in the Unorganized Retail Sector in Kerala</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(18)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(18)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Nisha K. Kumar, Anitha S. Yadav</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-08-20</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251357663</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Volume 50, Issue 4, Page 351-388, October-December. Mobile payment is gaining prominence worldwide, from consumers to vendors as a substitute to using money, debit or credit cards.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="17" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251357062?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Cryptocurrency Implied Volatility as a Driver of the Interlinkages Across Cryptocurrencies’ Returns: A Wavelet Analysis</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(17)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(17)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Vandana Dangi</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-08-19</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251357062</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Volume 50, Issue 4, Page 322-350, October-December. Among the plethora of literature on interlinkages in markets, more focus has been on peripheral factors.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="23" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251350873?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Nurturing Job Crafting Behaviour and Thriving at Work: A Congruity Theory Perspective</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(23)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(23)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Adil Zahoor</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-07-11</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251350873</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Ahead of Print. Executive SummaryThriving reflects the psychological state of progress, momentum and growth embedded in a collective experience of vitality and learning (Spreitzer et al., 2005).</div>
+                
+            </article>
+            
+            <article class="paper" data-id="14" data-source="Management Science" data-category="management">
+                <div class="paper-header">
+                    <a href="https://pubsonline.informs.org/doi/abs/10.1287/mnsc.2022.02777?af=R" target="_blank" class="paper-title">Incentives, Framing, and Reliance on Algorithmic Advice: An Experimental Study</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(14)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(14)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Ben Greiner, Philipp Grünwald, Thomas Lindner, Georg Lintner, Martin Wiernsperger</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Management Science</span>
+                    
+                    <span>2025-05-30</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1287/mnsc.2022.02777</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Management Science, Volume 72, Issue 1, Page 302-322, January 2026.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="13" data-source="Review of Financial Studies" data-category="finance">
+                <div class="paper-header">
+                    <a href="https://academic.oup.com/qje/article/140/4/3191/8152909?rss=1" target="_blank" class="paper-title">Sexual Harassment in Public Spaces and Police Patrols: Experimental Evidence from Urban India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(13)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(13)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Review of Financial Studies</span>
+                    
+                    <span>2025-05-29</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">We conduct a randomized controlled trial to evaluate the effect of an innovative police patrol program on sexual harassment in public spaces in Hyderabad, India.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="21" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251330750?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Functional Separation and a Restructured Licensing Framework for Indian Telecommunications</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(21)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(21)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Rohit Prasad, Varadharajan Sridhar, Mansi Kedia</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-05-12</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251330750</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Volume 50, Issue 4, Page 295-309, October-December. In 2001, the Communications Convergence Bill (CCB) of India envisaged a future in which fixed line, wireless telephony, and cable TV services could be integrated to be provided over the...</div>
+                
+            </article>
+            
+            <article class="paper" data-id="15" data-source="Management Science" data-category="management">
+                <div class="paper-header">
+                    <a href="https://pubsonline.informs.org/doi/abs/10.1287/mnsc.2023.01989?af=R" target="_blank" class="paper-title">Algorithm Reliance: Fast and Slow</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(15)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(15)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Clare Snyder, Samantha Keppler, Stephen Leider</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Management Science</span>
+                    
+                    <span>2025-05-06</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1287/mnsc.2023.01989</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Management Science, Volume 72, Issue 1, Page 368-385, January 2026.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="22" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909251325386?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Examining Relationship of Workplace Spirituality with Work Engagement, Organizational Commitment and Trust</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(22)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(22)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Vikram Singh Chouhan</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2025-04-10</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909251325386</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Ahead of Print. Organizations are universally under pressure to retain their workforce and keep them engaged. The transition from pure economic motives to spiritual development makes spirituality an inseparable and indispensable element of...</div>
+                
+            </article>
+            
+            <article class="paper" data-id="57" data-source="RBI" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://rbidocs.rbi.org.in/rdocs/Publications/PDFs/09WPS311220242E5A960EE93B4D3E96D72F9663C8366B.PDF" target="_blank" class="paper-title">RBI WPS (DEPR): 09/2024: State-Level Inflation Forecasts for India: Based on Data from Inflation Expectations Survey of Households</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(57)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(57)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Purnima Shaw and R. K. Sinha</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">RBI</span>
+                    
+                    <span>2024-12-31</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">RBI WPS (DEPR): 09/2024: State-Level Inflation Forecasts for India: Based on Data from Inflation Expectations Survey of Households</div>
+                
+            </article>
+            
+            <article class="paper" data-id="28" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909241292137?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Rethinking Security Paradigms in the Face of External Backlash: A Case Study in Private Security</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(28)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(28)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Soumendra Narain Bagchi, Rajeev Sharma</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2024-11-08</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909241292137</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Ahead of Print. Security of premises, assets and personnel form an essential requirement for commercial organisations. Lack of security impacts beyond the bottom-line, signalling a joint failure of organisation’s leadership and public...</div>
+                
+            </article>
+            
+            <article class="paper" data-id="58" data-source="RBI" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://rbidocs.rbi.org.in/rdocs/Publications/PDFs/08WPS031020249D7A858AE5674ACF934C3EB9865794A2.PDF" target="_blank" class="paper-title">RBI WPS (DEPR): 08/2024: Vegetables Inflation in India: A Study of Tomato, Onion and Potato (TOP)</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(58)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(58)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Ranjana Roy, Sanchit Gupta, Harsh Wardhan, Suvendu Sarkar, Soumasree Tewari, Rohan Bansal, Shelja Bhatia and Ashok Gulati</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">RBI</span>
+                    
+                    <span>2024-10-03</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">RBI WPS (DEPR): 08/2024: Vegetables Inflation in India: A Study of Tomato, Onion and Potato (TOP)</div>
+                
+            </article>
+            
+            <article class="paper" data-id="59" data-source="RBI" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://rbidocs.rbi.org.in/rdocs/Publications/PDFs/07WPS03102024F87DB0016A274949907433D3CA961B0D.PDF" target="_blank" class="paper-title">RBI WPS (DEPR): 07/2024: Pulses Inflation in India: A Study of Gram, Tur and Moong</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(59)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(59)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Shyma Jose, Sanchit Gupta, Manish Kumar Prasad, Sandip Das, Asish Thomas George, Thangzason Sonna, D.Suganthi and Ashok Gulati</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">RBI</span>
+                    
+                    <span>2024-10-03</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">RBI WPS (DEPR): 07/2024: Pulses Inflation in India: A Study of Gram, Tur and Moong</div>
+                
+            </article>
+            
+            <article class="paper" data-id="60" data-source="RBI" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://rbidocs.rbi.org.in/rdocs/Publications/PDFs/WPSNO6PRICE031020249E960B945B444B30A65497C65BF3E29F.PDF" target="_blank" class="paper-title">RBI WPS (DEPR): 06/2024: Price Dynamics and Value Chain of Fruits in India: A Study of Grapes, Bananas and Mangoes</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(60)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(60)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Raya Das, Ranjana Roy, Sanchit Gupta, Sanjib Bordoloi, Rishabh Kumar, Renjith Mohan and Ashok Gulati</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">RBI</span>
+                    
+                    <span>2024-10-03</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">RBI WPS (DEPR): 06/2024: Price Dynamics and Value Chain of Fruits in India: A Study of Grapes, Bananas and Mangoes</div>
+                
+            </article>
+            
+            <article class="paper" data-id="61" data-source="RBI" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://rbidocs.rbi.org.in/rdocs/Publications/PDFs/WPSNO5LIVESTOCK03102454D5F349A61F4C42A3ABE5BCCBD8B077.PDF" target="_blank" class="paper-title">RBI WPS (DEPR): 05/2024: Livestock and Poultry Inflation in India: A Study of Milk, Poultry Meat and Eggs</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(61)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(61)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Shyma Jose, Manish Kumar Prasad, Sabarni Chowdhury, Binod B. Bhoi, Vimal Kishore, Himani Shekhar and Ashok Gulati</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">RBI</span>
+                    
+                    <span>2024-10-03</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">RBI WPS (DEPR): 05/2024: Livestock and Poultry Inflation in India: A Study of Milk, Poultry Meat and Eggs</div>
+                
+            </article>
+            
+            <article class="paper" data-id="31" data-source="Vikalpa" data-category="management">
+                <div class="paper-header">
+                    <a href="https://journals.sagepub.com/doi/abs/10.1177/02560909241254149?ai=2b4&mi=ehikzz&af=R" target="_blank" class="paper-title">Distinct Dimensions of Human Capital in Distressed Firms: Implications for Firms and Research</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(31)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(31)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Amol Baxi, V. Raveendra Saradhi</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Vikalpa</span>
+                    
+                    <span>2024-09-17</span>
+                    
+                    
+                    <span class="paper-doi">DOI: 10.1177/02560909241254149</span>
+                    
+                </div>
+
+                
+                <div class="paper-summary">Vikalpa, Ahead of Print. This study examines how research has analysed human capital in distressed firms, which face unique challenges and complex choices impacting survival.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="62" data-source="RBI" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://rbidocs.rbi.org.in/rdocs/Publications/PDFs/WPS0403052024FE203580343B4DCCB5D681B665A002EC.PDF" target="_blank" class="paper-title">RBI WPS (DEPR): 04/2024: Assessing the Impact of Macroprudential Policies on Housing Credit Dynamics: Evidence from India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(62)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(62)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Amar Nath Yadav, Vivek Kumar, Alok Kumar Chakrawal and Jyoti Kumari</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">RBI</span>
+                    
+                    <span>2024-05-03</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">RBI WPS (DEPR): 04/2024: Assessing the Impact of Macroprudential Policies on Housing Credit Dynamics: Evidence from India</div>
+                
+            </article>
+            
+            <article class="paper" data-id="63" data-source="RBI" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://rbidocs.rbi.org.in/rdocs/Publications/PDFs/WPSNO032024EQUITYMARKETSFF667E6C081149E1ACC4D75FF0454862.PDF" target="_blank" class="paper-title">RBI WPS (DEPR): 03/2024: Equity Markets and Monetary Policy Surprises</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(63)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(63)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Mayank Gupta, Amit Pawar, Satyam Kumar, Abhinandan Borad and Subrat Kumar Seet</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">RBI</span>
+                    
+                    <span>2024-04-26</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">RBI WPS (DEPR): 03/2024: Equity Markets and Monetary Policy Surprises</div>
+                
+            </article>
+            
+            <article class="paper" data-id="64" data-source="RBI" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://rbidocs.rbi.org.in/rdocs/Publications/PDFs/WPSNO22024DRIVERSOFCPRATESPREADC3D1A2866CAA4903BF81907DA700A81C.PDF" target="_blank" class="paper-title">RBI WPS (DEPR): 02/2024: Drivers of Commercial Paper Rate Spread - An Empirical Assessment</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(64)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(64)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Priyanka Priyadarshini, Anshul, Srijashree Sardar, Dipak R. Chaudhari and Sangeeta Das</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">RBI</span>
+                    
+                    <span>2024-03-06</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">RBI WPS (DEPR): 02/2024: Drivers of Commercial Paper Rate Spread - An Empirical Assessment</div>
+                
+            </article>
+            
+            <article class="paper" data-id="65" data-source="RBI" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://rbidocs.rbi.org.in/rdocs/Publications/PDFs/WPSNO012024PRICINGOFINTERDEALEROTC08321AA31B9F4E1D81694520CEF6B719.PDF" target="_blank" class="paper-title">RBI WPS (DEPR): 01/2024: Pricing of Interdealer OTC Derivatives in a Limit Order Market</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(65)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(65)">Read</button>
+                    </div>
+                </div>
+
+                
+                <div class="paper-authors">Vidya Kamate and Abhishek Kumar</div>
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">RBI</span>
+                    
+                    <span>2024-03-05</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">RBI WPS (DEPR): 01/2024: Pricing of Interdealer OTC Derivatives in a Limit Order Market</div>
+                
+            </article>
+            
+            <article class="paper" data-id="1" data-source="World Development" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0305750X25003882?dgcid=rss_sd_all" target="_blank" class="paper-title">Barriers or catalysts? Traditional institutions and social mobility in rural India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(1)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(1)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">World Development</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: April 2026Source: World Development, Volume 200Author(s): Vegard Iversen, Anustup Kundu, Rahul Lahoti, Kunal Sen</div>
+                
+            </article>
+            
+            <article class="paper" data-id="2" data-source="Journal of Development Economics" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0304387825002573?dgcid=rss_sd_all" target="_blank" class="paper-title">Bring a friend: Leveraging financial and peer support to improve women’s reproductive agency in India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(2)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(2)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Journal of Development Economics</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: March 2026Source: Journal of Development Economics, Volume 180Author(s): S. Anukriti, Catalina Herrera-Almanza, Mahesh Karra</div>
+                
+            </article>
+            
+            <article class="paper" data-id="3" data-source="Journal of Development Economics" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0304387825002019?dgcid=rss_sd_all" target="_blank" class="paper-title">Caste identity and teachers’ biased expectations: Evidence from Bihar, India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(3)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(3)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Journal of Development Economics</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: February 2026Source: Journal of Development Economics, Volume 179Author(s): Ritwik Banerjee, Satarupa Mitra, Soham Sahoo, Ashmita Gupta</div>
+                
+            </article>
+            
+            <article class="paper" data-id="4" data-source="Journal of Development Economics" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0304387825001658?dgcid=rss_sd_all" target="_blank" class="paper-title">Input substitution in electricity generation and industrial production: Evidence from India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(4)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(4)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Journal of Development Economics</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: February 2026Source: Journal of Development Economics, Volume 179Author(s): Raavi Aggarwal</div>
+                
+            </article>
+            
+            <article class="paper" data-id="5" data-source="Journal of Development Economics" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0304387825001695?dgcid=rss_sd_all" target="_blank" class="paper-title">Digitalization as a double-edged sword: Winning services and losing manufacturing in India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(5)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(5)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Journal of Development Economics</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: February 2026Source: Journal of Development Economics, Volume 179Author(s): Yutong Chen</div>
+                
+            </article>
+            
+            <article class="paper" data-id="6" data-source="Journal of International Economics" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S002219962500159X?dgcid=rss_sd_all" target="_blank" class="paper-title">Foreign direct investment, prices and efficiency: Evidence from India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(6)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(6)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Journal of International Economics</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: January 2026Source: Journal of International Economics, Volume 159Author(s): Nesma Ali, Joel Stiebale</div>
+                
+            </article>
+            
+            <article class="paper" data-id="7" data-source="Journal of International Economics" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0022199625001588?dgcid=rss_sd_all" target="_blank" class="paper-title">Using satellite imagery to measure the impacts of new highways: An application to India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(7)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(7)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Journal of International Economics</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: January 2026Source: Journal of International Economics, Volume 159Author(s): Kathryn Baragwanath, Gordon Hanson, Amit K. Khandelwal, Chen Liu, Hogeun Park</div>
+                
+            </article>
+            
+            <article class="paper" data-id="11" data-source="Journal of Economic Behavior & Organization" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0167268125004421?dgcid=rss_sd_all" target="_blank" class="paper-title">The political economy of privatization of education: Role of local politicians in India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(11)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(11)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Journal of Economic Behavior & Organization</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: January 2026Source: Journal of Economic Behavior & Organization, Volume 241Author(s): Muneer Kalliyil, Soham Sahoo</div>
+                
+            </article>
+            
+            <article class="paper" data-id="12" data-source="Journal of Economic Behavior & Organization" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0167268125004925?dgcid=rss_sd_all" target="_blank" class="paper-title">Female legislators and forest conservation in India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(12)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(12)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">Journal of Economic Behavior & Organization</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: January 2026Source: Journal of Economic Behavior & Organization, Volume 241Author(s): Sutirtha Bandyopadhyay, Pranabes Probeshika Dutta, Naveen Hari, Bipasha Maity</div>
+                
+            </article>
+            
+            <article class="paper" data-id="32" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000928?dgcid=rss_sd_all" target="_blank" class="paper-title">How do organisational routines support User-centred design (UCD) innovations?: Dynamic capabilities perspective</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(32)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(32)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: Available online 7 January 2026Source: IIMB Management ReviewAuthor(s): Meeta Dasgupta, Priyanka Vallabh</div>
+                
+            </article>
+            
+            <article class="paper" data-id="33" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000904?dgcid=rss_sd_all" target="_blank" class="paper-title">Earnings management and cost of newly issued corporate bonds</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(33)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(33)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: Available online 6 January 2026Source: IIMB Management ReviewAuthor(s): Sowmya Subramaniam, Ranjitha Ajay, Eshan Bhargava</div>
+                
+            </article>
+            
+            <article class="paper" data-id="34" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000886?dgcid=rss_sd_all" target="_blank" class="paper-title">Deciphering E-Tail returns: A multi-study approach on the influence of transaction variables on returns</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(34)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(34)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: Available online 1 January 2026Source: IIMB Management ReviewAuthor(s): Anukesh Valase, Arshinder Kaur</div>
+                
+            </article>
+            
+            <article class="paper" data-id="35" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000898?dgcid=rss_sd_all" target="_blank" class="paper-title">How does informal competition shape innovation? Exploring the roles of labour flexibility and special economic zones in emerging economies</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(35)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(35)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: Available online 31 December 2025Source: IIMB Management ReviewAuthor(s): Bibek Bhattacharya, Sudhanshu Maheshwari, Ashneet Kaur</div>
+                
+            </article>
+            
+            <article class="paper" data-id="36" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000916?dgcid=rss_sd_all" target="_blank" class="paper-title">Integrated programmes versus standalones in higher education: Comparative performance assessment using a natural experiment</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(36)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(36)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: Available online 31 December 2025Source: IIMB Management ReviewAuthor(s): Shivendra Kumar Pandey</div>
+                
+            </article>
+            
+            <article class="paper" data-id="37" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000874?dgcid=rss_sd_all" target="_blank" class="paper-title">Human resource challenges in Indian Armed Forces: View from the top</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(37)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(37)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: Available online 28 December 2025Source: IIMB Management ReviewAuthor(s): Mohan Thite, Sangita De, Shweta Shah</div>
+                
+            </article>
+            
+            <article class="paper" data-id="38" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000710?dgcid=rss_sd_all" target="_blank" class="paper-title">Impact of the COVID-19 lockdown on agriculture in a rainfed region in India: Lessons for dealing with natural and economic shocks</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(38)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(38)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: December 2025Source: IIMB Management Review, Volume 37, Issue 4Author(s): Juhi Chatterjee, Rakesh Gomaji Nannewar, Tejal Kanitkar, R. Srikanth</div>
+                
+            </article>
+            
+            <article class="paper" data-id="39" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000709?dgcid=rss_sd_all" target="_blank" class="paper-title">Leverage adjustment analytics: Effect of macroeconomic conditions on emerging economies</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(39)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(39)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: December 2025Source: IIMB Management Review, Volume 37, Issue 4Author(s): Ravindra Nath Shukla, Vishal Vyas, Ankur Roy, Animesh Chaturvedi</div>
+                
+            </article>
+            
+            <article class="paper" data-id="40" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000692?dgcid=rss_sd_all" target="_blank" class="paper-title">Examining the impact of perceived hospital accreditation quality standards on patient loyalty: A Stimulus-Organism-Response theory perspective</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(40)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(40)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: December 2025Source: IIMB Management Review, Volume 37, Issue 4Author(s): Swapnarag Swain, Anees Ahmad, Sreelekha Mishra</div>
+                
+            </article>
+            
+            <article class="paper" data-id="41" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000679?dgcid=rss_sd_all" target="_blank" class="paper-title">Impact of banking penetration on stock market participation: A district-level analysis</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(41)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(41)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: December 2025Source: IIMB Management Review, Volume 37, Issue 4Author(s): Mahika Gandhi, Debasis Rooj, Reshmi Sengupta</div>
+                
+            </article>
+            
+            <article class="paper" data-id="42" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000667?dgcid=rss_sd_all" target="_blank" class="paper-title">The impact of ESG reporting on the cost of equity capital in India: The moderating role of external auditors</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(42)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(42)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: December 2025Source: IIMB Management Review, Volume 37, Issue 4Author(s): Archana Patro, Geeti Mishra, Cheng-Hsun Lee</div>
+                
+            </article>
+            
+            <article class="paper" data-id="43" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000655?dgcid=rss_sd_all" target="_blank" class="paper-title">Asset quality, CSR, and profitability nexus in Indian banks: The moderating impact of CSR</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(43)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(43)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: December 2025Source: IIMB Management Review, Volume 37, Issue 4Author(s): Abhijit Biswas, Chetan G K, Arindam Das</div>
+                
+            </article>
+            
+            <article class="paper" data-id="44" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000680?dgcid=rss_sd_all" target="_blank" class="paper-title">Taming the beast versus nurturing the beast: Rethinking entrepreneurship policy</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(44)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(44)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: December 2025Source: IIMB Management Review, Volume 37, Issue 4Author(s): Manjunath Agalagurki Nagaraj, Kothandaram Kumar, Vinay Reddy Venumuddala, Aman Bhuwania</div>
+                
+            </article>
+            
+            <article class="paper" data-id="45" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000722?dgcid=rss_sd_all" target="_blank" class="paper-title">Editorial</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(45)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(45)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: December 2025Source: IIMB Management Review, Volume 37, Issue 4Author(s): Sushanta K. Mishra</div>
+                
+            </article>
+            
+            <article class="paper" data-id="46" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000746?dgcid=rss_sd_all" target="_blank" class="paper-title">Editorial Board</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(46)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(46)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: December 2025Source: IIMB Management Review, Volume 37, Issue 4Author(s):</div>
+                
+            </article>
+            
+            <article class="paper" data-id="47" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000473?dgcid=rss_sd_all" target="_blank" class="paper-title">Global Capability Centres: Emerging Opportunities and Challenges</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(47)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(47)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: September 2025Source: IIMB Management Review, Volume 37, Issue 3Author(s): Srivardhini K. Jha, Anilesh Seth</div>
+                
+            </article>
+            
+            <article class="paper" data-id="48" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S097038962500045X?dgcid=rss_sd_all" target="_blank" class="paper-title">The synergistic resilience framework: Unravelling the interplay of personal, social, and organisational factors of employee resilience in the Indian workplace</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(48)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(48)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: September 2025Source: IIMB Management Review, Volume 37, Issue 3Author(s): Debanjana Deb Biswas, Sitamma Mikkilineni, Neha Gahlawat</div>
+                
+            </article>
+            
+            <article class="paper" data-id="49" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000461?dgcid=rss_sd_all" target="_blank" class="paper-title">Role of workplace spirituality on work-related attitudes and outcomes: The moderating role of organisational politics</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(49)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(49)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: September 2025Source: IIMB Management Review, Volume 37, Issue 3Author(s): Swati Dhir</div>
+                
+            </article>
+            
+            <article class="paper" data-id="50" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000448?dgcid=rss_sd_all" target="_blank" class="paper-title">Conditionality matters: A Samaritan’s Dilemma with in-kind transfers targeting educational attainment</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(50)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(50)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: September 2025Source: IIMB Management Review, Volume 37, Issue 3Author(s): Somdeep Chatterjee, Oindrila Dey</div>
+                
+            </article>
+            
+            <article class="paper" data-id="51" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000497?dgcid=rss_sd_all" target="_blank" class="paper-title">Unveiling the hidden patterns: Non-linear determinants of natural hedging</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(51)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(51)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: September 2025Source: IIMB Management Review, Volume 37, Issue 3Author(s): Anureet Saharan, Madhumathi Rajendran</div>
+                
+            </article>
+            
+            <article class="paper" data-id="52" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000485?dgcid=rss_sd_all" target="_blank" class="paper-title">Return volatility connectedness and portfolio strategies among sustainable assets with traditional counterparts and cryptocurrency: Insights from extreme markets</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(52)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(52)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: September 2025Source: IIMB Management Review, Volume 37, Issue 3Author(s): Satyaban Sahoo, Deepti Singh</div>
+                
+            </article>
+            
+            <article class="paper" data-id="53" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000436?dgcid=rss_sd_all" target="_blank" class="paper-title">Detecting and forecasting financial bubbles in the Indian stock market using machine learning models</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(53)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(53)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: September 2025Source: IIMB Management Review, Volume 37, Issue 3Author(s): Mahalakshmi Manian, Parthajit Kayal</div>
+                
+            </article>
+            
+            <article class="paper" data-id="54" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000412?dgcid=rss_sd_all" target="_blank" class="paper-title">A network science-based approach to rank cricket players</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(54)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(54)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: September 2025Source: IIMB Management Review, Volume 37, Issue 3Author(s): Kundan Kandhway</div>
+                
+            </article>
+            
+            <article class="paper" data-id="55" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000503?dgcid=rss_sd_all" target="_blank" class="paper-title">Editorial</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(55)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(55)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: September 2025Source: IIMB Management Review, Volume 37, Issue 3Author(s): Sushanta K Mishra</div>
+                
+            </article>
+            
+            <article class="paper" data-id="56" data-source="IIMB Management Review" data-category="management">
+                <div class="paper-header">
+                    <a href="https://www.sciencedirect.com/science/article/pii/S0970389625000527?dgcid=rss_sd_all" target="_blank" class="paper-title">Editorial Board</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(56)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(56)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">IIMB Management Review</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Publication date: September 2025Source: IIMB Management Review, Volume 37, Issue 3Author(s):</div>
+                
+            </article>
+            
+            <article class="paper" data-id="66" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/assessment-of-the-impact-of-gst-rate-restructuring-on-consumers-gst-liability-in-india/" target="_blank" class="paper-title">Assessment of the Impact of GST Rate Restructuring on Consumers’ GST Liability in India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(66)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(66)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Assessment of the Impact of GST Rate Restructuring on Consumers’ GST Liability in India</div>
+                
+            </article>
+            
+            <article class="paper" data-id="67" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/not-just-astronauts-gender-diagnosis-and-budgeting-in-indias-space-sector/" target="_blank" class="paper-title">Not Just Astronauts: Gender Diagnosis and Budgeting in India's Space Sector</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(67)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(67)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Not Just Astronauts: Gender Diagnosis and Budgeting in India's Space Sector</div>
+                
+            </article>
+            
+            <article class="paper" data-id="68" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/public-financial-management-reforms-in-india-understanding-state-level-experiences-from-the-implementation-of-single-nodal-agency-reform-in-national-health-mission/" target="_blank" class="paper-title">Public Financial Management Reforms in India: Understanding State-level Experiences from the Implementation of Single Nodal Agency Reform in National Health Mission</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(68)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(68)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Public Financial Management Reforms in India: Understanding State-level Experiences from the Implementation of Single Nodal Agency Reform in National Health Mission</div>
+                
+            </article>
+            
+            <article class="paper" data-id="69" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/monetary-policy-during-negative-output-gap-periods-in-india-in-the-first-quarter-of-the-21st-century/" target="_blank" class="paper-title">Monetary policy during Negative Output Gap periods in India in the First Quarter of the 21st Century</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(69)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(69)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Monetary policy during Negative Output Gap periods in India in the First Quarter of the 21st Century</div>
+                
+            </article>
+            
+            <article class="paper" data-id="70" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/fiscal-multipliers-in-india-a-macro-model-linking-human-development-growth-and-distribution/" target="_blank" class="paper-title">Fiscal multipliers in India: A macro-model linking human development, growth and distribution</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(70)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(70)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Fiscal multipliers in India: A macro-model linking human development, growth and distribution</div>
+                
+            </article>
+            
+            <article class="paper" data-id="71" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/bridging-the-budget-divide-how-pefa-assessments-and-pfm-reforms-diagnose-the-budget-reliability/" target="_blank" class="paper-title">Bridging the Budget Divide: How PEFA Assessments and PFM Reforms Diagnose the Budget Reliability</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(71)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(71)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Bridging the Budget Divide: How PEFA Assessments and PFM Reforms Diagnose the Budget Reliability</div>
+                
+            </article>
+            
+            <article class="paper" data-id="72" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/reflecting-on-the-past-to-plan-the-future-revenue-performance-evaluation-of-indian-gst/" target="_blank" class="paper-title">Reflecting on the Past to Plan the Future: Revenue Performance Evaluation of Indian GST</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(72)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(72)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Reflecting on the Past to Plan the Future: Revenue Performance Evaluation of Indian GST</div>
+                
+            </article>
+            
+            <article class="paper" data-id="73" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/cop30-and-fiscal-policy-analysis-for-climate-adaptation-in-an-emerging-economy-india/" target="_blank" class="paper-title">COP30 and Fiscal Policy Analysis for Climate Adaptation in an Emerging Economy, India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(73)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(73)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">COP30 and Fiscal Policy Analysis for Climate Adaptation in an Emerging Economy, India</div>
+                
+            </article>
+            
+            <article class="paper" data-id="74" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/beyond-necessities-a-closer-look-at-per-capita-consumption-expenditure-on-tobacco-and-alcoholic-beverages-during-the-last-decade/" target="_blank" class="paper-title">Beyond Necessities: A Closer Look at Per Capita Consumption Expenditure on Tobacco and Alcoholic Beverages during the last Decade</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(74)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(74)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Beyond Necessities: A Closer Look at Per Capita Consumption Expenditure on Tobacco and Alcoholic Beverages during the last Decade</div>
+                
+            </article>
+            
+            <article class="paper" data-id="75" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/price-elasticity-of-demand-for-alcoholic-beverages-in-india-analysis-based-on-the-nssos-household-consumption-expenditure-survey-of-2022-23-and-2023-24/" target="_blank" class="paper-title">Price Elasticity of Demand for Alcoholic Beverages in India: Analysis based on the NSSO’s Household Consumption Expenditure Survey of 2022-23 and 2023-24</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(75)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(75)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Price Elasticity of Demand for Alcoholic Beverages in India: Analysis based on the NSSO’s Household Consumption Expenditure Survey of 2022-23 and 2023-24</div>
+                
+            </article>
+            
+            <article class="paper" data-id="76" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/distributional-impact-of-indian-gst-based-on-the-nssos-household-consumption-expenditure-survey-of-2022-23/" target="_blank" class="paper-title">Distributional Impact of Indian GST based on the NSSO’s Household Consumption Expenditure Survey of 2022-23</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(76)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(76)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Distributional Impact of Indian GST based on the NSSO’s Household Consumption Expenditure Survey of 2022-23</div>
+                
+            </article>
+            
+            <article class="paper" data-id="77" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/how-to-mitigate-revenue-uncertainty-related-to-restructuring-the-gst-rate-structure/" target="_blank" class="paper-title">How to Mitigate Revenue Uncertainty Related to Restructuring the GST Rate Structure?</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(77)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(77)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">How to Mitigate Revenue Uncertainty Related to Restructuring the GST Rate Structure?</div>
+                
+            </article>
+            
+            <article class="paper" data-id="78" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/public-and-private-corporate-investment-an-empirical-analysis-of-the-crowding-in-effects-of-fiscal-policy-in-india/" target="_blank" class="paper-title">Public and Private Corporate Investment: An Empirical Analysis of the “Crowding –in” Effects of Fiscal Policy in India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(78)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(78)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Public and Private Corporate Investment: An Empirical Analysis of the “Crowding –in” Effects of Fiscal Policy in India</div>
+                
+            </article>
+            
+            <article class="paper" data-id="79" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/impact-of-trump-shock-on-indian-economy-an-assessment-fy-2024-25-year-end-macroeconomic-review/" target="_blank" class="paper-title">Impact of Trump Shock on Indian Economy: An Assessment FY 2024-25: Year End Macroeconomic Review</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(79)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(79)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Impact of Trump Shock on Indian Economy: An Assessment FY 2024-25: Year End Macroeconomic Review</div>
+                
+            </article>
+            
+            <article class="paper" data-id="80" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/determinants-of-own-source-revenue-generation-in-rural-local-bodies-and-efficiency-of-collection/" target="_blank" class="paper-title">Determinants of Own Source Revenue Generation in Rural Local Bodies and Efficiency of Collection</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(80)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(80)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Determinants of Own Source Revenue Generation in Rural Local Bodies and Efficiency of Collection</div>
+                
+            </article>
+            
+            <article class="paper" data-id="81" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/fiscal-policy-for-equity-analysing-the-public-expenditure-benefit-incidence-of-health-sector-in-india/" target="_blank" class="paper-title">Fiscal Policy for Equity: Analysing the Public Expenditure Benefit Incidence of Health Sector in India</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(81)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(81)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Fiscal Policy for Equity: Analysing the Public Expenditure Benefit Incidence of Health Sector in India</div>
+                
+            </article>
+            
+            <article class="paper" data-id="82" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/fiscal-transparency-and-budgetary-processes-in-india-issues-before-the-16th-finance-commission/" target="_blank" class="paper-title">Fiscal Transparency and Budgetary Processes in India: Issues before the 16th Finance Commission</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(82)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(82)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Fiscal Transparency and Budgetary Processes in India: Issues before the 16th Finance Commission</div>
+                
+            </article>
+            
+            <article class="paper" data-id="83" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/mining-royalty-is-not-tax-analyzing-the-supreme-court-judgment/" target="_blank" class="paper-title">Mining Royalty is not Tax: Analyzing the Supreme Court Judgment</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(83)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(83)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Mining Royalty is not Tax: Analyzing the Supreme Court Judgment</div>
+                
+            </article>
+            
+            <article class="paper" data-id="84" data-source="NIPFP" data-category="policy">
+                <div class="paper-header">
+                    <a href="https://www.nipfp.org.in/publication-index-page/working-paper-index-page/social-spending-and-fiscal-policy-in-india-towards-an-alternate-macro-fiscal-framework-integrating-human-development/" target="_blank" class="paper-title">Social Spending and Fiscal Policy in India: Towards an Alternate Macro-Fiscal Framework Integrating Human Development</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(84)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(84)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NIPFP</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Social Spending and Fiscal Policy in India: Towards an Alternate Macro-Fiscal Framework Integrating Human Development</div>
+                
+            </article>
+            
+            <article class="paper" data-id="85" data-source="NCAER" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://ncaer.org/publication/innovation-as-national-strategy-can-india-invest-its-way-to-viksit-bharat/" target="_blank" class="paper-title">Innovation as national strategy: Can India invest its way to Viksit Bharat?</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(85)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(85)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NCAER</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Innovation as national strategy: Can India invest its way to Viksit Bharat?</div>
+                
+            </article>
+            
+            <article class="paper" data-id="86" data-source="NCAER" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://ncaer.org/publication/balancing-affordability-and-financial-sustainability-in-urban-metro-systems-evidence-from-hyderabad-metro/" target="_blank" class="paper-title">Balancing Affordability and Financial Sustainability in Urban Metro Systems: Evidence from Hyderabad Metro</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(86)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(86)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NCAER</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Balancing Affordability and Financial Sustainability in Urban Metro Systems: Evidence from Hyderabad Metro</div>
+                
+            </article>
+            
+            <article class="paper" data-id="87" data-source="NCAER" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://ncaer.org/publication/reforming-indias-vocational-skilling-ecosystem/" target="_blank" class="paper-title">Reforming India’s Vocational Skilling Ecosystem</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(87)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(87)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NCAER</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Reforming India’s Vocational Skilling Ecosystem</div>
+                
+            </article>
+            
+            <article class="paper" data-id="88" data-source="NCAER" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://ncaer.org/publication/outlook-2026-emerging-markets-will-need-a-new-playbook/" target="_blank" class="paper-title">Outlook 2026: Emerging markets will need a new playbook</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(88)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(88)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NCAER</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Outlook 2026: Emerging markets will need a new playbook</div>
+                
+            </article>
+            
+            <article class="paper" data-id="89" data-source="NCAER" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://ncaer.org/publication/to-make-vb-g-ram-g-work-evaluate-mgnrega-honestly/" target="_blank" class="paper-title">To make VB-G Ram G work, evaluate MGNREGA honestly</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(89)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(89)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NCAER</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">To make VB-G Ram G work, evaluate MGNREGA honestly</div>
+                
+            </article>
+            
+            <article class="paper" data-id="90" data-source="NBER" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://www.nber.org/papers/w34680#fromrss" target="_blank" class="paper-title">Platform Work: Evidence from Drivers in India, Indonesia, and Kenya -- by Achyuta Adhvaryu, Martin Atela, Valentina Brailovskaya, Priyanka Dua, Jenny Susan John, Pratibha Joshi, Rivandra Royono</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(90)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(90)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NBER</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Using surveys and administrative data from representative samples of drivers working on three leading gig platforms in India, Indonesia, and Kenya, we document the composition, economic experiences, and labor market trajectories of platform workers.</div>
+                
+            </article>
+            
+            <article class="paper" data-id="91" data-source="NBER" data-category="economics">
+                <div class="paper-header">
+                    <a href="https://www.nber.org/papers/w34683#fromrss" target="_blank" class="paper-title">How In-School Supervised Ed-Tech Support Produces Massive Learning Gains: A Khan Academy Field Experiment in India -- by Philip Oreopoulos, Oliver Keyes-Krysakowski, Deepak Agarwal</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar(91)">Star</button>
+                        <button class="read-btn" onclick="toggleRead(91)">Read</button>
+                    </div>
+                </div>
+
+                
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">NBER</span>
+                    
+                    
+                </div>
+
+                
+                <div class="paper-summary">Computer-assisted learning (CAL) platforms frequently underperform at scale not because the technology is ineffective, but because schools face substantial implementation frictions: teachers and administrators must overcome initial technical...</div>
+                
+            </article>
+            
+        </div>
+
+        <div class="no-results" id="no-results" style="display: none;">
+            No papers match your filters.
+        </div>
+
+        <footer>
+            <p>Built for The Daily Brief by Zerodha</p>
+        </footer>
+    </div>
+
+    <script>
+        // Load state from localStorage
+        const readPapers = JSON.parse(localStorage.getItem('readPapers') || '{}');
+        const starredPapers = JSON.parse(localStorage.getItem('starredPapers') || '{}');
+
+        // Apply initial state
+        document.querySelectorAll('.paper').forEach(paper => {
+            const id = paper.dataset.id;
+            if (readPapers[id]) {
+                paper.classList.add('read');
+                paper.querySelector('.read-btn').classList.add('marked-read');
+                paper.querySelector('.read-btn').textContent = 'Unread';
+            }
+            if (starredPapers[id]) {
+                paper.querySelector('.star-btn').classList.add('starred');
+                paper.querySelector('.star-btn').textContent = 'Unstar';
+            }
+        });
+
+        // Toggle functions
+        function toggleRead(id) {
+            const paper = document.querySelector(`[data-id="${id}"]`);
+            const btn = paper.querySelector('.read-btn');
+
+            if (readPapers[id]) {
+                delete readPapers[id];
+                paper.classList.remove('read');
+                btn.classList.remove('marked-read');
+                btn.textContent = 'Read';
+            } else {
+                readPapers[id] = true;
+                paper.classList.add('read');
+                btn.classList.add('marked-read');
+                btn.textContent = 'Unread';
+            }
+
+            localStorage.setItem('readPapers', JSON.stringify(readPapers));
+            applyFilters();
+        }
+
+        function toggleStar(id) {
+            const paper = document.querySelector(`[data-id="${id}"]`);
+            const btn = paper.querySelector('.star-btn');
+
+            if (starredPapers[id]) {
+                delete starredPapers[id];
+                btn.classList.remove('starred');
+                btn.textContent = 'Star';
+            } else {
+                starredPapers[id] = true;
+                btn.classList.add('starred');
+                btn.textContent = 'Unstar';
+            }
+
+            localStorage.setItem('starredPapers', JSON.stringify(starredPapers));
+            applyFilters();
+        }
+
+        // Filtering
+        const searchInput = document.getElementById('search');
+        const sourceFilter = document.getElementById('source-filter');
+        const hideReadCheckbox = document.getElementById('hide-read');
+        const showStarredCheckbox = document.getElementById('show-starred');
+
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const source = sourceFilter.value;
+            const hideRead = hideReadCheckbox.checked;
+            const showStarred = showStarredCheckbox.checked;
+
+            let visible = 0;
+            let total = 0;
+
+            document.querySelectorAll('.paper').forEach(paper => {
+                total++;
+                const id = paper.dataset.id;
+                const paperSource = paper.dataset.source;
+                const text = paper.textContent.toLowerCase();
+
+                let show = true;
+
+                // Search filter
+                if (searchTerm && !text.includes(searchTerm)) {
+                    show = false;
+                }
+
+                // Source filter
+                if (source && paperSource !== source) {
+                    show = false;
+                }
+
+                // Hide read filter
+                if (hideRead && readPapers[id]) {
+                    show = false;
+                }
+
+                // Show starred only
+                if (showStarred && !starredPapers[id]) {
+                    show = false;
+                }
+
+                paper.style.display = show ? 'block' : 'none';
+                if (show) visible++;
+            });
+
+            // Update stats
+            document.getElementById('visible-count').textContent = `Showing ${visible} of ${total}`;
+
+            // Show/hide no results message
+            document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
+        }
+
+        // Event listeners
+        searchInput.addEventListener('input', applyFilters);
+        sourceFilter.addEventListener('change', applyFilters);
+        hideReadCheckbox.addEventListener('change', applyFilters);
+        showStarredCheckbox.addEventListener('change', applyFilters);
+
+        // Initial filter
+        applyFilters();
+    </script>
+</body>
+</html>

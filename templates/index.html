@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Econ/Finance Paper Aggregator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: #1a1a2e;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .controls {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .controls input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .controls select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .controls label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .stats {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .paper-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .paper {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: box-shadow 0.2s;
+        }
+
+        .paper:hover {
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+
+        .paper.read {
+            opacity: 0.6;
+        }
+
+        .paper-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 8px;
+        }
+
+        .paper-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a1a2e;
+            text-decoration: none;
+            flex: 1;
+        }
+
+        .paper-title:hover {
+            color: #4a4a8a;
+        }
+
+        .paper-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .paper-actions button {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .paper-actions button:hover {
+            background: #f0f0f0;
+        }
+
+        .paper-actions button.starred {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .paper-actions button.marked-read {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .paper-authors {
+            color: #1565c0;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .paper-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .paper-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .tag-source {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .paper-doi {
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .paper-summary {
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-top: 8px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+            }
+
+            .controls input[type="text"],
+            .controls select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>India Econ/Finance Paper Aggregator</h1>
+            <p>{{ total_papers }} papers from {{ sources|length }} sources | Last updated: {{ last_updated }}</p>
+        </header>
+
+        <div class="controls">
+            <input type="text" id="search" placeholder="Search papers...">
+
+            <select id="source-filter">
+                <option value="">All Sources</option>
+                {% for source in sources %}
+                <option value="{{ source }}">{{ source }}</option>
+                {% endfor %}
+            </select>
+
+            <label>
+                <input type="checkbox" id="hide-read"> Hide read
+            </label>
+
+            <label>
+                <input type="checkbox" id="show-starred"> Starred only
+            </label>
+
+            <span class="stats" id="visible-count"></span>
+        </div>
+
+        <div class="paper-list" id="paper-list">
+            {% for paper in papers %}
+            <article class="paper" data-id="{{ paper.id }}" data-source="{{ paper.source }}" data-category="{{ paper.category }}">
+                <div class="paper-header">
+                    <a href="{{ paper.url }}" target="_blank" class="paper-title">{{ paper.title }}</a>
+                    <div class="paper-actions">
+                        <button class="star-btn" onclick="toggleStar({{ paper.id }})">Star</button>
+                        <button class="read-btn" onclick="toggleRead({{ paper.id }})">Read</button>
+                    </div>
+                </div>
+
+                {% if paper.authors and paper.authors != paper.source %}
+                <div class="paper-authors">{{ paper.authors }}</div>
+                {% endif %}
+
+                <div class="paper-meta">
+                    <span class="tag tag-source">{{ paper.source }}</span>
+                    {% if paper.published_date %}
+                    <span>{{ paper.published_date }}</span>
+                    {% endif %}
+                    {% if paper.doi %}
+                    <span class="paper-doi">DOI: {{ paper.doi }}</span>
+                    {% endif %}
+                </div>
+
+                {% if paper.summary %}
+                <div class="paper-summary">{{ paper.summary }}</div>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
+
+        <div class="no-results" id="no-results" style="display: none;">
+            No papers match your filters.
+        </div>
+
+        <footer>
+            <p>Built for The Daily Brief by Zerodha</p>
+        </footer>
+    </div>
+
+    <script>
+        // Load state from localStorage
+        const readPapers = JSON.parse(localStorage.getItem('readPapers') || '{}');
+        const starredPapers = JSON.parse(localStorage.getItem('starredPapers') || '{}');
+
+        // Apply initial state
+        document.querySelectorAll('.paper').forEach(paper => {
+            const id = paper.dataset.id;
+            if (readPapers[id]) {
+                paper.classList.add('read');
+                paper.querySelector('.read-btn').classList.add('marked-read');
+                paper.querySelector('.read-btn').textContent = 'Unread';
+            }
+            if (starredPapers[id]) {
+                paper.querySelector('.star-btn').classList.add('starred');
+                paper.querySelector('.star-btn').textContent = 'Unstar';
+            }
+        });
+
+        // Toggle functions
+        function toggleRead(id) {
+            const paper = document.querySelector(`[data-id="${id}"]`);
+            const btn = paper.querySelector('.read-btn');
+
+            if (readPapers[id]) {
+                delete readPapers[id];
+                paper.classList.remove('read');
+                btn.classList.remove('marked-read');
+                btn.textContent = 'Read';
+            } else {
+                readPapers[id] = true;
+                paper.classList.add('read');
+                btn.classList.add('marked-read');
+                btn.textContent = 'Unread';
+            }
+
+            localStorage.setItem('readPapers', JSON.stringify(readPapers));
+            applyFilters();
+        }
+
+        function toggleStar(id) {
+            const paper = document.querySelector(`[data-id="${id}"]`);
+            const btn = paper.querySelector('.star-btn');
+
+            if (starredPapers[id]) {
+                delete starredPapers[id];
+                btn.classList.remove('starred');
+                btn.textContent = 'Star';
+            } else {
+                starredPapers[id] = true;
+                btn.classList.add('starred');
+                btn.textContent = 'Unstar';
+            }
+
+            localStorage.setItem('starredPapers', JSON.stringify(starredPapers));
+            applyFilters();
+        }
+
+        // Filtering
+        const searchInput = document.getElementById('search');
+        const sourceFilter = document.getElementById('source-filter');
+        const hideReadCheckbox = document.getElementById('hide-read');
+        const showStarredCheckbox = document.getElementById('show-starred');
+
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const source = sourceFilter.value;
+            const hideRead = hideReadCheckbox.checked;
+            const showStarred = showStarredCheckbox.checked;
+
+            let visible = 0;
+            let total = 0;
+
+            document.querySelectorAll('.paper').forEach(paper => {
+                total++;
+                const id = paper.dataset.id;
+                const paperSource = paper.dataset.source;
+                const text = paper.textContent.toLowerCase();
+
+                let show = true;
+
+                // Search filter
+                if (searchTerm && !text.includes(searchTerm)) {
+                    show = false;
+                }
+
+                // Source filter
+                if (source && paperSource !== source) {
+                    show = false;
+                }
+
+                // Hide read filter
+                if (hideRead && readPapers[id]) {
+                    show = false;
+                }
+
+                // Show starred only
+                if (showStarred && !starredPapers[id]) {
+                    show = false;
+                }
+
+                paper.style.display = show ? 'block' : 'none';
+                if (show) visible++;
+            });
+
+            // Update stats
+            document.getElementById('visible-count').textContent = `Showing ${visible} of ${total}`;
+
+            // Show/hide no results message
+            document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
+        }
+
+        // Event listeners
+        searchInput.addEventListener('input', applyFilters);
+        sourceFilter.addEventListener('change', applyFilters);
+        hideReadCheckbox.addEventListener('change', applyFilters);
+        showStarredCheckbox.addEventListener('change', applyFilters);
+
+        // Initial filter
+        applyFilters();
+    </script>
+</body>
+</html>

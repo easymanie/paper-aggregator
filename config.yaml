@@ -1,0 +1,168 @@
+# Paper Aggregator Configuration
+# Add or remove sources as needed
+
+# India-relevance keywords (papers with these are auto-included)
+india_keywords:
+  - India
+  - Indian
+  - RBI
+  - SEBI
+  - NSE
+  - BSE
+  - rupee
+  - Mumbai
+  - Delhi
+  - Bangalore
+  - Chennai
+  - Hyderabad
+  - NIFTY
+  - Sensex
+
+# RSS-based journal feeds
+# Format: name, url, category, india_only (if true, only fetch India-relevant papers)
+journals:
+  # Economics journals
+  - name: "World Development"
+    url: "https://rss.sciencedirect.com/publication/science/0305750X"
+    category: "economics"
+    india_only: true
+
+  - name: "Journal of Development Economics"
+    url: "https://rss.sciencedirect.com/publication/science/03043878"
+    category: "economics"
+    india_only: true
+
+  - name: "Journal of Comparative Economics"
+    url: "https://rss.sciencedirect.com/publication/science/01475967"
+    category: "economics"
+    india_only: true
+
+  - name: "Journal of International Economics"
+    url: "https://rss.sciencedirect.com/publication/science/00221996"
+    category: "economics"
+    india_only: true
+
+  - name: "Journal of Monetary Economics"
+    url: "https://rss.sciencedirect.com/publication/science/03043932"
+    category: "economics"
+    india_only: true
+
+  - name: "Review of Development Economics"
+    url: "https://onlinelibrary.wiley.com/feed/14679361/most-recent"
+    category: "economics"
+    india_only: true
+
+  - name: "Journal of Economic Behavior & Organization"
+    url: "https://rss.sciencedirect.com/publication/science/01672681"
+    category: "economics"
+    india_only: true
+
+  # Finance journals
+  - name: "Journal of Financial Economics"
+    url: "https://rss.sciencedirect.com/publication/science/0304405X"
+    category: "finance"
+    india_only: true
+
+  - name: "Journal of Corporate Finance"
+    url: "https://rss.sciencedirect.com/publication/science/09291199"
+    category: "finance"
+    india_only: true
+
+  - name: "Journal of Banking & Finance"
+    url: "https://rss.sciencedirect.com/publication/science/03784266"
+    category: "finance"
+    india_only: true
+
+  - name: "Review of Financial Studies"
+    url: "https://academic.oup.com/rss/site_5504/3365.xml"
+    category: "finance"
+    india_only: true
+
+  - name: "Journal of Finance"
+    url: "https://onlinelibrary.wiley.com/feed/15406261/most-recent"
+    category: "finance"
+    india_only: true
+
+  # Management journals
+  - name: "Academy of Management Journal"
+    url: "https://journals.aom.org/action/showFeed?type=etoc&feed=rss&jc=amj"
+    category: "management"
+    india_only: true
+
+  - name: "Academy of Management Review"
+    url: "https://journals.aom.org/action/showFeed?type=etoc&feed=rss&jc=amr"
+    category: "management"
+    india_only: true
+
+  - name: "Strategic Management Journal"
+    url: "https://onlinelibrary.wiley.com/feed/10970266/most-recent"
+    category: "management"
+    india_only: true
+
+  - name: "Organization Science"
+    url: "https://pubsonline.informs.org/action/showFeed?type=etoc&feed=rss&jc=orsc"
+    category: "management"
+    india_only: true
+
+  - name: "Management Science"
+    url: "https://pubsonline.informs.org/action/showFeed?type=etoc&feed=rss&jc=mnsc"
+    category: "management"
+    india_only: true
+
+  - name: "Journal of Management Studies"
+    url: "https://onlinelibrary.wiley.com/feed/14676486/most-recent"
+    category: "management"
+    india_only: true
+
+  - name: "Administrative Science Quarterly"
+    url: "https://journals.sagepub.com/action/showFeed?ui=0&mi=ehikzz&ai=2b4&jc=asqa&type=etoc&feed=rss"
+    category: "management"
+    india_only: true
+
+  - name: "Journal of International Business Studies"
+    url: "https://link.springer.com/search.rss?facet-content-type=Article&facet-journal-id=41267"
+    category: "management"
+    india_only: true
+
+  # Niche/specialized journals
+  - name: "Research Policy"
+    url: "https://rss.sciencedirect.com/publication/science/00487333"
+    category: "economics"
+    india_only: true
+
+  - name: "Journal of Business Venturing"
+    url: "https://rss.sciencedirect.com/publication/science/08839026"
+    category: "management"
+    india_only: true
+
+  # Note: Oxford Academic journals (Industrial & Corporate Change, Cambridge Journal
+  # of Economics, Oxford Economic Papers) have disabled public RSS feeds.
+  # These require manual monitoring or a custom scraper.
+
+  # Note: EPW doesn't have a public RSS feed. Papers from EPW need manual addition
+  # or scraping (which may violate their terms). Commenting out for now.
+
+  - name: "Vikalpa"
+    url: "https://journals.sagepub.com/action/showFeed?ui=0&mi=ehikzz&ai=2b4&jc=vika&type=etoc&feed=rss"
+    category: "management"
+    india_only: false
+
+  - name: "IIMB Management Review"
+    url: "https://rss.sciencedirect.com/publication/science/09703896"
+    category: "management"
+    india_only: false
+
+# Scraped sources (handled by dedicated fetchers)
+scraped_sources:
+  - name: "RBI"
+    enabled: true
+  - name: "SEBI"
+    enabled: true
+  - name: "NIPFP"
+    enabled: true
+  - name: "NCAER"
+    enabled: true
+  - name: "NBER"
+    enabled: true
+  - name: "SSRN"
+    enabled: true
