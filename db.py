@@ -7,9 +7,8 @@ from typing import Optional
 from dataclasses import dataclass
 
 
-# Only keep papers from last 3 years
-CUTOFF_YEARS = 3
-CUTOFF_DATE = (datetime.now() - timedelta(days=CUTOFF_YEARS * 365)).strftime("%Y-%m-%d")
+# Only keep papers from 2024 onwards
+CUTOFF_DATE = "2024-01-01"
 
 
 @dataclass

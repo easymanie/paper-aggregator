@@ -1,14 +1,50 @@
 """RSS-based fetcher for academic journals."""
 
 import feedparser
-from datetime import datetime, timedelta
+import re
+from datetime import datetime
 from typing import Iterator, Optional
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from db import Paper
 from .base import BaseFetcher, is_india_relevant
 
 
-# Only include papers from last 3 years
-CUTOFF_DATE = datetime.now() - timedelta(days=3*365)
+# Only include papers from 2024 onwards
+CUTOFF_DATE = datetime(2024, 1, 1)
+
+
+def clean_url(url: str) -> str:
+    """Remove tracking parameters from URLs and create cleaner links."""
+    if not url:
+        return url
+
+    parsed = urlparse(url)
+
+    # Parameters to remove (tracking/RSS-related)
+    params_to_remove = {
+        'dgcid', 'af', 'ai', 'mi', 'ui', 'rss', 'utm_source', 'utm_medium',
+        'utm_campaign', 'utm_content', 'utm_term', 'fromrss'
+    }
+
+    # Parse and filter query parameters
+    query_params = parse_qs(parsed.query, keep_blank_values=True)
+    filtered_params = {
+        k: v for k, v in query_params.items()
+        if k.lower() not in params_to_remove
+    }
+
+    # Rebuild URL
+    new_query = urlencode(filtered_params, doseq=True) if filtered_params else ''
+    cleaned = urlunparse((
+        parsed.scheme,
+        parsed.netloc,
+        parsed.path,
+        parsed.params,
+        new_query,
+        ''  # Remove fragment
+    ))
+
+    return cleaned
 
 
 class JournalFetcher(BaseFetcher):
@@ -59,8 +95,25 @@ class JournalFetcher(BaseFetcher):
             if not title:
                 return None
 
-            # Get URL
-            url = entry.get('link', '')
+            # Try to get DOI first (most reliable link format)
+            url = None
+
+            # Check for DOI in prism:doi or dc:identifier
+            doi = entry.get('prism_doi') or entry.get('dc_identifier', '')
+            if doi and doi.startswith('10.'):
+                url = f'https://doi.org/{doi}'
+
+            # Check for DOI in the link
+            if not url:
+                link = entry.get('link', '')
+                doi_match = re.search(r'(10\.\d{4,}/[^\s&?#]+)', link)
+                if doi_match:
+                    url = f'https://doi.org/{doi_match.group(1)}'
+
+            # Fall back to cleaned link URL
+            if not url:
+                url = clean_url(entry.get('link', ''))
+
             if not url:
                 return None
 

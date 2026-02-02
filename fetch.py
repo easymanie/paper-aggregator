@@ -16,6 +16,15 @@ from sources import (
     NIPFPFetcher,
     NCAERFetcher,
     SSRNFetcher,
+    ICRIERFetcher,
+    CPRFetcher,
+    AshokaFetcher,
+    IIMAFetcher,
+    IGIDRFetcher,
+    ISIFetcher,
+    XKDRFetcher,
+    TwitterFetcher,
+    KielFetcher,
 )
 
 
@@ -81,6 +90,15 @@ def fetch_scraped_sources(config: dict) -> int:
         "NCAER": NCAERFetcher,
         "NBER": NBERFetcher,
         "SSRN": SSRNFetcher,
+        "ICRIER": ICRIERFetcher,
+        "CPR": CPRFetcher,
+        "Ashoka CEDA": AshokaFetcher,
+        "IIM Ahmedabad": IIMAFetcher,
+        "IGIDR": IGIDRFetcher,
+        "ISI Delhi": ISIFetcher,
+        "XKDR": XKDRFetcher,
+        "Twitter/X": TwitterFetcher,
+        "Kiel Institute": KielFetcher,
     }
 
     for source in scraped:

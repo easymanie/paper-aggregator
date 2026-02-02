@@ -9,8 +9,8 @@ from db import Paper
 from .base import BaseFetcher
 
 
-# Only include papers from last 3 years
-CUTOFF_DATE = datetime.now() - timedelta(days=3*365)
+# Only include papers from 2024 onwards
+CUTOFF_DATE = datetime(2024, 1, 1)
 
 
 def parse_date(date_str: str) -> Optional[str]:
@@ -126,8 +126,11 @@ class RBIFetcher(BaseFetcher):
 class SEBIFetcher(BaseFetcher):
     """Fetcher for SEBI working papers and research."""
 
-    # SEBI working papers page
-    PAPERS_URL = "https://www.sebi.gov.in/sebiweb/home/HomeAction.do?doListing=yes&sid=4&ssid=27&smid=0"
+    # SEBI working papers and research papers pages
+    PAPERS_URLS = [
+        "https://www.sebi.gov.in/sebiweb/home/HomeAction.do?doListing=yes&sid=4&ssid=81&smid=104",  # Working Papers
+        "https://www.sebi.gov.in/sebiweb/home/HomeAction.do?doListing=yes&sid=4&ssid=81&smid=109",  # Research Papers
+    ]
 
     HEADERS = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -138,41 +141,68 @@ class SEBIFetcher(BaseFetcher):
 
     def fetch(self) -> Iterator[Paper]:
         """Fetch papers from SEBI website."""
-        try:
-            response = requests.get(self.PAPERS_URL, headers=self.HEADERS, timeout=30)
-            response.raise_for_status()
+        seen_urls = set()
 
-            soup = BeautifulSoup(response.content, 'lxml')
-            seen_urls = set()
+        for papers_url in self.PAPERS_URLS:
+            try:
+                response = requests.get(papers_url, headers=self.HEADERS, timeout=30)
+                response.raise_for_status()
 
-            # Look for links to individual reports/papers
-            for link in soup.find_all('a', href=True):
-                href = link.get('href', '')
-                text = link.get_text(strip=True)
+                soup = BeautifulSoup(response.content, 'lxml')
 
-                # Skip navigation and generic links
-                if not text or len(text) < 20:
-                    continue
-                if href in seen_urls:
-                    continue
+                # Find paper entries in table rows or list items
+                for row in soup.find_all(['tr', 'li', 'div']):
+                    # Look for links with PDF or detail pages
+                    links = row.find_all('a', href=True)
+                    for link in links:
+                        href = link.get('href', '')
+                        text = link.get_text(strip=True)
 
-                # Look for report/paper links (PDF or legal pages)
-                if '.pdf' in href.lower():
-                    url = href if href.startswith('http') else f"https://www.sebi.gov.in{href}"
-                    seen_urls.add(href)
+                        # Skip navigation and generic links
+                        if not text or len(text) < 15:
+                            continue
+                        if href in seen_urls:
+                            continue
 
-                    yield Paper(
-                        title=text,
-                        authors="SEBI",
-                        abstract=f"SEBI Research: {text}",
-                        url=url,
-                        source="SEBI",
-                        category="finance",
-                        is_india_specific=True
-                    )
+                        # Look for paper links (PDF, working papers, or detail pages)
+                        is_paper = (
+                            '.pdf' in href.lower() or
+                            '/legal/' in href.lower() or
+                            '/reports/working-papers/' in href.lower() or
+                            '/reports/research/' in href.lower() or
+                            'doGet' in href
+                        )
 
-        except Exception as e:
-            print(f"  Error fetching SEBI papers: {e}")
+                        if is_paper:
+                            url = href if href.startswith('http') else f"https://www.sebi.gov.in{href}"
+                            seen_urls.add(href)
+
+                            # Try to extract date from nearby elements
+                            date_text = None
+                            for sibling in row.find_all(['td', 'span']):
+                                sib_text = sibling.get_text(strip=True)
+                                parsed = parse_date(sib_text)
+                                if parsed:
+                                    date_text = parsed
+                                    break
+
+                            # Only include recent papers
+                            if date_text and not is_recent(date_text):
+                                continue
+
+                            yield Paper(
+                                title=text,
+                                authors="SEBI",
+                                abstract=f"SEBI Research: {text}",
+                                url=url,
+                                source="SEBI",
+                                category="finance",
+                                published_date=date_text,
+                                is_india_specific=True
+                            )
+
+            except Exception as e:
+                print(f"  Error fetching SEBI papers from {papers_url}: {e}")
 
 
 class NIPFPFetcher(BaseFetcher):

@@ -73,9 +73,9 @@ journals:
     category: "finance"
     india_only: true
 
-  - name: "Review of Financial Studies"
+  - name: "Quarterly Journal of Economics"
     url: "https://academic.oup.com/rss/site_5504/3365.xml"
-    category: "finance"
+    category: "economics"
     india_only: true
 
   - name: "Journal of Finance"
@@ -124,6 +124,127 @@ journals:
     category: "management"
     india_only: true
 
+  # Top economics journals (global, India-filtered)
+  - name: "Econometrica"
+    url: "https://onlinelibrary.wiley.com/feed/14680262/most-recent"
+    category: "economics"
+    india_only: true
+
+  - name: "Journal of Political Economy"
+    url: "https://www.journals.uchicago.edu/action/showFeed?type=etoc&feed=rss&jc=jpe"
+    category: "economics"
+    india_only: true
+
+  - name: "The Economic Journal"
+    url: "https://onlinelibrary.wiley.com/feed/14680297/most-recent"
+    category: "economics"
+    india_only: true
+
+  - name: "European Economic Review"
+    url: "https://rss.sciencedirect.com/publication/science/00142921"
+    category: "economics"
+    india_only: true
+
+  - name: "Journal of Economic Theory"
+    url: "https://rss.sciencedirect.com/publication/science/00220531"
+    category: "economics"
+    india_only: true
+
+  - name: "International Economic Review"
+    url: "https://onlinelibrary.wiley.com/feed/14682354/most-recent"
+    category: "economics"
+    india_only: true
+
+  - name: "Economica"
+    url: "https://onlinelibrary.wiley.com/feed/14680335/most-recent"
+    category: "economics"
+    india_only: true
+
+  - name: "Oxford Bulletin of Economics and Statistics"
+    url: "https://onlinelibrary.wiley.com/feed/14680084/most-recent"
+    category: "economics"
+    india_only: true
+
+  - name: "RAND Journal of Economics"
+    url: "https://onlinelibrary.wiley.com/feed/17562171/most-recent"
+    category: "economics"
+    india_only: true
+
+  - name: "Journal of Applied Econometrics"
+    url: "https://onlinelibrary.wiley.com/feed/10991255/most-recent"
+    category: "economics"
+    india_only: true
+
+  # Public economics & policy
+  - name: "Journal of Public Economics"
+    url: "https://rss.sciencedirect.com/publication/science/00472727"
+    category: "economics"
+    india_only: true
+
+  - name: "Food Policy"
+    url: "https://rss.sciencedirect.com/publication/science/03069192"
+    category: "economics"
+    india_only: true
+
+  # Labor economics
+  - name: "Journal of Labor Economics"
+    url: "https://www.journals.uchicago.edu/action/showFeed?type=etoc&feed=rss&jc=jole"
+    category: "economics"
+    india_only: true
+
+  - name: "Journal of Human Resources"
+    url: "https://jhr.uwpress.org/rss/current.xml"
+    category: "economics"
+    india_only: true
+
+  - name: "Labour Economics"
+    url: "https://rss.sciencedirect.com/publication/science/09275371"
+    category: "economics"
+    india_only: true
+
+  # Urban & regional
+  - name: "Journal of Urban Economics"
+    url: "https://rss.sciencedirect.com/publication/science/00941190"
+    category: "economics"
+    india_only: true
+
+  - name: "Regional Science and Urban Economics"
+    url: "https://rss.sciencedirect.com/publication/science/01660462"
+    category: "economics"
+    india_only: true
+
+  # Industrial organization & trade
+  - name: "International Journal of Industrial Organization"
+    url: "https://rss.sciencedirect.com/publication/science/01677187"
+    category: "economics"
+    india_only: true
+
+  - name: "The World Economy"
+    url: "https://onlinelibrary.wiley.com/feed/14679701/most-recent"
+    category: "economics"
+    india_only: true
+
+  - name: "Games and Economic Behavior"
+    url: "https://rss.sciencedirect.com/publication/science/08998256"
+    category: "economics"
+    india_only: true
+
+  # Emerging markets & international finance
+  - name: "Emerging Markets Review"
+    url: "https://rss.sciencedirect.com/publication/science/15660141"
+    category: "finance"
+    india_only: true
+
+  - name: "Pacific-Basin Finance Journal"
+    url: "https://rss.sciencedirect.com/publication/science/0927538X"
+    category: "finance"
+    india_only: true
+
+  - name: "Journal of International Money and Finance"
+    url: "https://rss.sciencedirect.com/publication/science/02615606"
+    category: "finance"
+    india_only: true
+
   # Niche/specialized journals
   - name: "Research Policy"
     url: "https://rss.sciencedirect.com/publication/science/00487333"
@@ -154,15 +275,44 @@ journals:
 
 # Scraped sources (handled by dedicated fetchers)
 scraped_sources:
+  # Policy institutions
   - name: "RBI"
     enabled: true
   - name: "SEBI"
-    enabled: true
+    enabled: false  # No working papers since 2014
   - name: "NIPFP"
     enabled: true
   - name: "NCAER"
     enabled: true
+
+  # Think tanks
+  - name: "ICRIER"
+    enabled: true
+  - name: "CPR"
+    enabled: true
+
+  # Educational institutions
+  - name: "Ashoka CEDA"
+    enabled: true
+  - name: "IIM Ahmedabad"
+    enabled: true
+  - name: "IGIDR"
+    enabled: true
+  - name: "ISI Delhi"
+    enabled: true
+  - name: "XKDR"
+    enabled: true
+
+  # International (India-filtered)
   - name: "NBER"
     enabled: true
   - name: "SSRN"
-    enabled: true
+    enabled: false  # RSS feeds no longer available
+
+  # International think tanks (India-filtered)
+  - name: "Kiel Institute"
+    enabled: false  # Website blocks automated requests - needs manual monitoring
+
+  # Social media (experimental - currently broken)
+  - name: "Twitter/X"
+    enabled: false  # All free Twitter RSS services have anti-bot protection

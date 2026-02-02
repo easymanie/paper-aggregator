@@ -192,6 +192,132 @@
             color: #1565c0;
         }
 
+        .tag-topic {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            cursor: pointer;
+        }
+
+        .tag-topic:hover {
+            background: #e1bee7;
+        }
+
+        .tag-access {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+        }
+
+        .tag-free {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .tag-paywalled {
+            background: #ffecb3;
+            color: #f57c00;
+        }
+
+        .tag-covered {
+            background: #ffcdd2;
+            color: #c62828;
+            font-size: 0.7rem;
+        }
+
+        .recommend-btn {
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .recommend-btn:hover {
+            background: #2d2d4a;
+        }
+
+        .recommendations {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d4a 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .recommendations-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .recommendations-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .recommendations-subtitle {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+
+        .close-btn:hover {
+            color: #ff6b6b;
+        }
+
+        .rec-paper {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .rec-paper:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .rec-paper-title {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .rec-paper-title:hover {
+            color: #a0c4ff;
+        }
+
+        .rec-paper-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+            color: #ccc;
+        }
+
+        .rec-score {
+            background: #4CAF50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
         .paper-doi {
             font-family: monospace;
             font-size: 0.75rem;
@@ -203,6 +329,12 @@
             font-size: 0.9rem;
             line-height: 1.6;
             margin-top: 8px;
+        }
+
+        .paper-summary-placeholder {
+            color: #999;
+            font-style: italic;
+            font-size: 0.85rem;
         }
 
         .no-results {
@@ -247,6 +379,13 @@
                 {% endfor %}
             </select>
 
+            <select id="topic-filter">
+                <option value="">All Topics</option>
+                {% for topic in topics %}
+                <option value="{{ topic }}">{{ topic }}</option>
+                {% endfor %}
+            </select>
+
             <label>
                 <input type="checkbox" id="hide-read"> Hide read
             </label>
@@ -255,12 +394,23 @@
                 <input type="checkbox" id="show-starred"> Starred only
             </label>
 
+            <button id="recommend-btn" class="recommend-btn">Today's Pick for Daily Brief</button>
+
             <span class="stats" id="visible-count"></span>
+        </div>
+
+        <div id="recommendations" class="recommendations" style="display: none;">
+            <div class="recommendations-header">
+                <h3>Today's Pick for The Daily Brief</h3>
+                <button id="close-recommendations" class="close-btn">&times;</button>
+            </div>
+            <p class="recommendations-subtitle">Top pick for today based on Daily Brief editorial standards</p>
+            <div id="recommendations-list"></div>
         </div>
 
         <div class="paper-list" id="paper-list">
             {% for paper in papers %}
-            <article class="paper" data-id="{{ paper.id }}" data-source="{{ paper.source }}" data-category="{{ paper.category }}">
+            <article class="paper" data-id="{{ paper.id }}" data-source="{{ paper.source }}" data-category="{{ paper.category }}" data-topics="{{ paper.topics | join(',') }}" data-db-score="{{ paper.daily_brief_score }}" data-covered="{{ paper.is_covered|lower }}" data-title="{{ paper.title }}" data-url="{{ paper.url }}">
                 <div class="paper-header">
                     <a href="{{ paper.url }}" target="_blank" class="paper-title">{{ paper.title }}</a>
                     <div class="paper-actions">
@@ -275,6 +425,17 @@
 
                 <div class="paper-meta">
                     <span class="tag tag-source">{{ paper.source }}</span>
+                    {% if paper.is_open_access %}
+                    <span class="tag tag-access tag-free">Free</span>
+                    {% else %}
+                    <span class="tag tag-access tag-paywalled">Paywalled</span>
+                    {% endif %}
+                    {% if paper.is_covered %}
+                    <span class="tag tag-covered">Already Covered</span>
+                    {% endif %}
+                    {% for topic in paper.topics %}
+                    <span class="tag tag-topic" onclick="filterByTopic('{{ topic }}')">{{ topic }}</span>
+                    {% endfor %}
                     {% if paper.published_date %}
                     <span>{{ paper.published_date }}</span>
                     {% endif %}
@@ -285,6 +446,8 @@
 
                 {% if paper.summary %}
                 <div class="paper-summary">{{ paper.summary }}</div>
+                {% else %}
+                <div class="paper-summary paper-summary-placeholder">Click title to read full paper →</div>
                 {% endif %}
             </article>
             {% endfor %}
@@ -360,12 +523,14 @@
         // Filtering
         const searchInput = document.getElementById('search');
         const sourceFilter = document.getElementById('source-filter');
+        const topicFilter = document.getElementById('topic-filter');
         const hideReadCheckbox = document.getElementById('hide-read');
         const showStarredCheckbox = document.getElementById('show-starred');
 
         function applyFilters() {
             const searchTerm = searchInput.value.toLowerCase();
             const source = sourceFilter.value;
+            const topic = topicFilter.value;
             const hideRead = hideReadCheckbox.checked;
             const showStarred = showStarredCheckbox.checked;
 
@@ -376,6 +541,7 @@
                 total++;
                 const id = paper.dataset.id;
                 const paperSource = paper.dataset.source;
+                const paperTopics = paper.dataset.topics || '';
                 const text = paper.textContent.toLowerCase();
 
                 let show = true;
@@ -387,6 +553,11 @@
 
                 // Source filter
                 if (source && paperSource !== source) {
+                    show = false;
+                }
+
+                // Topic filter
+                if (topic && !paperTopics.split(',').includes(topic)) {
                     show = false;
                 }
 
@@ -411,14 +582,80 @@
             document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
         }
 
+        // Filter by clicking on a topic tag
+        function filterByTopic(topic) {
+            topicFilter.value = topic;
+            applyFilters();
+        }
+
         // Event listeners
         searchInput.addEventListener('input', applyFilters);
         sourceFilter.addEventListener('change', applyFilters);
+        topicFilter.addEventListener('change', applyFilters);
         hideReadCheckbox.addEventListener('change', applyFilters);
         showStarredCheckbox.addEventListener('change', applyFilters);
 
         // Initial filter
         applyFilters();
+
+        // Recommendations functionality
+        const recommendBtn = document.getElementById('recommend-btn');
+        const recommendationsDiv = document.getElementById('recommendations');
+        const recommendationsList = document.getElementById('recommendations-list');
+        const closeRecommendations = document.getElementById('close-recommendations');
+
+        function showRecommendations() {
+            // Gather all papers with their scores
+            const papers = [];
+            document.querySelectorAll('.paper').forEach(paper => {
+                const id = paper.dataset.id;
+                // Skip already read papers
+                if (readPapers[id]) return;
+                // Skip papers on topics already covered by The Daily Brief
+                if (paper.dataset.covered === 'true') return;
+
+                papers.push({
+                    id: id,
+                    title: paper.dataset.title,
+                    url: paper.dataset.url,
+                    source: paper.dataset.source,
+                    topics: paper.dataset.topics,
+                    score: parseInt(paper.dataset.dbScore) || 0
+                });
+            });
+
+            // Sort by Daily Brief score (highest first)
+            papers.sort((a, b) => b.score - a.score);
+
+            // Take only the top paper
+            const topPaper = papers[0];
+
+            if (!topPaper) {
+                recommendationsList.innerHTML = '<p style="color: #ccc;">No unread papers available. Mark some papers as unread to get recommendations.</p>';
+            } else {
+                // Render single recommendation
+                recommendationsList.innerHTML = `
+                    <div class="rec-paper">
+                        <a href="${topPaper.url}" target="_blank" class="rec-paper-title">
+                            ${topPaper.title}
+                        </a>
+                        <div class="rec-paper-meta">
+                            <span class="rec-score">Score: ${topPaper.score}</span>
+                            <span>${topPaper.source}</span>
+                            <span>${topPaper.topics.split(',')[0]}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            recommendationsDiv.style.display = 'block';
+            recommendationsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        recommendBtn.addEventListener('click', showRecommendations);
+        closeRecommendations.addEventListener('click', () => {
+            recommendationsDiv.style.display = 'none';
+        });
     </script>
 </body>
 </html>
