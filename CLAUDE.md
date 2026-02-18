@@ -35,8 +35,10 @@ python3 serve.py --port 3000        # Custom port
 - `base.py`: `BaseFetcher` ABC and `is_india_relevant()` keyword filter
 - `journals.py`: `JournalFetcher` for RSS feeds (feedparser)
 - `rbi.py`: RBI, SEBI, NIPFP, NCAER scrapers (BeautifulSoup)
-- `thinktanks.py`: ICRIER, CPR, Ashoka, IIMA, IGIDR, ISI Delhi, XKDR
+- `thinktanks.py`: ICRIER, CPR, Ashoka, IIMA, IGIDR, ISI Delhi, XKDR, JNU, CSEP, FICCI
 - `nber.py`: NBER working papers (India-filtered)
+- `unctad.py`: UNCTAD publications (India-filtered)
+- `cag.py`: CAG audit reports
 
 All fetchers inherit from `BaseFetcher` and implement `fetch() -> Iterator[Paper]`.
 

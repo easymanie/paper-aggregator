@@ -461,3 +461,223 @@ class XKDRFetcher(BaseFetcher):
 
         except Exception as e:
             print(f"  Error fetching XKDR papers: {e}")
+
+
+class JNUFetcher(BaseFetcher):
+    """Fetcher for JNU CESP working papers via IDEAS/RePEc."""
+
+    PAPERS_URL = "https://ideas.repec.org/d/cejnuin.html"
+
+    def __init__(self):
+        super().__init__("JNU", "economics")
+
+    def fetch(self) -> Iterator[Paper]:
+        """Fetch papers from JNU CESP via RePEc, using H4 year headings."""
+        try:
+            response = requests.get(self.PAPERS_URL, headers=HEADERS, timeout=30)
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.content, 'lxml')
+            seen_urls = set()
+            current_year = None
+
+            # Iterate through H4 (year headings) and LI (paper entries) in order
+            for elem in soup.find_all(['h4', 'li']):
+                if elem.name == 'h4':
+                    year_text = elem.get_text(strip=True)
+                    if year_text.isdigit():
+                        current_year = int(year_text)
+                    else:
+                        current_year = None
+                    continue
+
+                # Skip papers from before 2024 or with unknown year
+                if not current_year or current_year < 2024:
+                    continue
+
+                if 'list-group-item' not in elem.get('class', []):
+                    continue
+
+                bold = elem.find('b')
+                if not bold:
+                    continue
+                a_tag = bold.find('a', href=True)
+                if not a_tag:
+                    continue
+
+                title = a_tag.get_text(strip=True)
+                href = a_tag.get('href', '')
+
+                if not title or len(title) < 15 or href in seen_urls:
+                    continue
+
+                seen_urls.add(href)
+                url = f"https://ideas.repec.org{href}" if href.startswith('/') else href
+                date_text = f"{current_year}-01-01"
+
+                # Extract authors (text before the year)
+                text = elem.get_text().strip()
+                authors = "JNU CESP"
+                author_match = re.search(r'^(.+?),\s*\d{4}', text)
+                if author_match:
+                    authors = author_match.group(1).strip() or "JNU CESP"
+
+                yield Paper(
+                    title=title,
+                    authors=authors,
+                    abstract=f"JNU CESP Working Paper: {title}",
+                    url=url,
+                    source="JNU",
+                    category="economics",
+                    published_date=date_text,
+                    is_india_specific=True
+                )
+
+        except Exception as e:
+            print(f"  Error fetching JNU papers: {e}")
+
+
+class CSEPFetcher(BaseFetcher):
+    """Fetcher for Centre for Social and Economic Progress publications via WP REST API."""
+
+    # WordPress REST API endpoints for different publication types
+    API_ENDPOINTS = [
+        "https://csep.org/wp-json/wp/v2/working-paper",
+        "https://csep.org/wp-json/wp/v2/discussion-paper",
+        "https://csep.org/wp-json/wp/v2/impact-paper",
+        "https://csep.org/wp-json/wp/v2/reports",
+        "https://csep.org/wp-json/wp/v2/policy-brief",
+    ]
+
+    def __init__(self):
+        super().__init__("CSEP", "policy")
+
+    def fetch(self) -> Iterator[Paper]:
+        """Fetch papers from CSEP via WordPress REST API."""
+        import html as html_mod
+
+        seen_urls = set()
+
+        for endpoint in self.API_ENDPOINTS:
+            try:
+                response = requests.get(
+                    endpoint,
+                    params={"per_page": 20, "orderby": "date", "order": "desc"},
+                    headers=HEADERS,
+                    timeout=30
+                )
+                if response.status_code == 404:
+                    continue
+                response.raise_for_status()
+
+                for item in response.json():
+                    url = item.get("link", "")
+                    if not url or url in seen_urls:
+                        continue
+
+                    title = html_mod.unescape(item.get("title", {}).get("rendered", ""))
+                    if not title or len(title) < 15:
+                        continue
+
+                    seen_urls.add(url)
+
+                    # Parse date
+                    date_text = None
+                    date_str = item.get("date", "")
+                    if date_str:
+                        date_text = date_str[:10]  # "2026-02-03T11:44:13" -> "2026-02-03"
+
+                    if date_text and not is_recent(date_text):
+                        continue
+
+                    # Extract abstract from excerpt
+                    abstract = "CSEP Publication"
+                    excerpt = item.get("excerpt", {}).get("rendered", "")
+                    if excerpt:
+                        excerpt_text = re.sub(r'<[^>]+>', '', html_mod.unescape(excerpt))
+                        excerpt_text = ' '.join(excerpt_text.split())
+                        if len(excerpt_text) > 20:
+                            abstract = excerpt_text[:500]
+
+                    yield Paper(
+                        title=title,
+                        authors="CSEP",
+                        abstract=abstract,
+                        url=url,
+                        source="CSEP",
+                        category="policy",
+                        published_date=date_text,
+                        is_india_specific=True
+                    )
+
+            except Exception as e:
+                print(f"  Error fetching CSEP from {endpoint}: {e}")
+
+
+class FICCIFetcher(BaseFetcher):
+    """Fetcher for FICCI studies and reports."""
+
+    PAPERS_URL = "https://ficci.in/studies"
+
+    def __init__(self):
+        super().__init__("FICCI", "policy")
+
+    def fetch(self) -> Iterator[Paper]:
+        """Fetch studies from FICCI website."""
+        try:
+            response = requests.get(self.PAPERS_URL, headers=HEADERS, timeout=30)
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.content, 'lxml')
+            seen_urls = set()
+
+            # Each study is in a .single-list div wrapping an <a>
+            for card in soup.find_all('div', class_='single-list'):
+                link = card.find('a', href=lambda h: h and '/study_details/' in h)
+                if not link:
+                    continue
+
+                href = link.get('href', '')
+                if href in seen_urls:
+                    continue
+
+                # Title in <h3>
+                h3 = card.find('h3')
+                if not h3:
+                    continue
+                title = h3.get_text(strip=True)
+                if not title or len(title) < 10:
+                    continue
+
+                seen_urls.add(href)
+                url = href if href.startswith('http') else f"https://ficci.in{href}"
+
+                # Date in <time>
+                date_text = None
+                time_elem = card.find('time')
+                if time_elem:
+                    date_text = parse_date_flexible(time_elem.get_text(strip=True))
+
+                # Sector/category
+                sector = ""
+                cat_elem = card.find('span', class_=lambda c: c and 'category' in c)
+                if cat_elem:
+                    sector = cat_elem.get_text(strip=True)
+
+                abstract = f"FICCI Study: {title}"
+                if sector:
+                    abstract = f"FICCI Study ({sector}): {title}"
+
+                yield Paper(
+                    title=title,
+                    authors="FICCI",
+                    abstract=abstract,
+                    url=url,
+                    source="FICCI",
+                    category="policy",
+                    published_date=date_text,
+                    is_india_specific=True
+                )
+
+        except Exception as e:
+            print(f"  Error fetching FICCI papers: {e}")

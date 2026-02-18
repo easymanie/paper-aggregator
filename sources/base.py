@@ -69,7 +69,8 @@ def is_india_relevant(title: str, abstract: str = "", authors: str = "") -> bool
 # Sources that are inherently India-focused
 INDIA_SOURCES = {
     'RBI', 'SEBI', 'NIPFP', 'NCAER', 'EPW', 'XKDR',
-    'Vikalpa', 'IIMB Management Review', 'Decision', 'IIMK Management Review'
+    'Vikalpa', 'IIMB Management Review', 'Decision', 'IIMK Management Review',
+    'JNU', 'CSEP', 'FICCI', 'CAG',
 }
 
 

@@ -23,6 +23,11 @@ from sources import (
     IGIDRFetcher,
     ISIFetcher,
     XKDRFetcher,
+    JNUFetcher,
+    CSEPFetcher,
+    FICCIFetcher,
+    UNCTADFetcher,
+    CAGFetcher,
     TwitterFetcher,
     KielFetcher,
 )
@@ -97,6 +102,11 @@ def fetch_scraped_sources(config: dict) -> int:
         "IGIDR": IGIDRFetcher,
         "ISI Delhi": ISIFetcher,
         "XKDR": XKDRFetcher,
+        "JNU": JNUFetcher,
+        "CSEP": CSEPFetcher,
+        "FICCI": FICCIFetcher,
+        "UNCTAD": UNCTADFetcher,
+        "CAG": CAGFetcher,
         "Twitter/X": TwitterFetcher,
         "Kiel Institute": KielFetcher,
     }

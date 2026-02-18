@@ -13,9 +13,14 @@ from .thinktanks import (
     IGIDRFetcher,
     ISIFetcher,
     XKDRFetcher,
+    JNUFetcher,
+    CSEPFetcher,
+    FICCIFetcher,
 )
 from .twitter import TwitterFetcher
 from .kiel import KielFetcher
+from .unctad import UNCTADFetcher
+from .cag import CAGFetcher
 
 __all__ = [
     'BaseFetcher',
@@ -34,6 +39,11 @@ __all__ = [
     'IGIDRFetcher',
     'ISIFetcher',
     'XKDRFetcher',
+    'JNUFetcher',
+    'CSEPFetcher',
+    'FICCIFetcher',
+    'UNCTADFetcher',
+    'CAGFetcher',
     'TwitterFetcher',
     'KielFetcher',
 ]

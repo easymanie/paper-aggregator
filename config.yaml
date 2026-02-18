@@ -302,9 +302,19 @@ scraped_sources:
     enabled: true
   - name: "XKDR"
     enabled: true
+  - name: "JNU"
+    enabled: true
+  - name: "CSEP"
+    enabled: true
+  - name: "FICCI"
+    enabled: true
+  - name: "CAG"
+    enabled: true
 
   # International (India-filtered)
   - name: "NBER"
+    enabled: true
+  - name: "UNCTAD"
     enabled: true
   - name: "SSRN"
     enabled: false  # RSS feeds no longer available
