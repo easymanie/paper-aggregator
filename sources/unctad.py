@@ -1,4 +1,4 @@
-"""UNCTAD publications fetcher (India-filtered)."""
+"""UNCTAD publications fetcher."""
 
 import re
 import requests
@@ -14,7 +14,7 @@ HEADERS = {
 
 
 class UNCTADFetcher(BaseFetcher):
-    """Fetcher for UNCTAD publications (international, India-filtered)."""
+    """Fetcher for UNCTAD publications."""
 
     PAPERS_URL = "https://unctad.org/publications"
 
@@ -22,7 +22,7 @@ class UNCTADFetcher(BaseFetcher):
         super().__init__("UNCTAD", "economics")
 
     def fetch(self) -> Iterator[Paper]:
-        """Fetch publications from UNCTAD, filtering for India relevance."""
+        """Fetch publications from UNCTAD."""
         try:
             response = requests.get(self.PAPERS_URL, headers=HEADERS, timeout=30)
             response.raise_for_status()
@@ -59,7 +59,7 @@ class UNCTADFetcher(BaseFetcher):
                         from .thinktanks import parse_date_flexible
                         date_text = parse_date_flexible(date_match.group(1))
 
-                paper = Paper(
+                yield Paper(
                     title=title,
                     authors="UNCTAD",
                     abstract=f"UNCTAD Publication: {title}",
@@ -67,12 +67,8 @@ class UNCTADFetcher(BaseFetcher):
                     source="UNCTAD",
                     category="economics",
                     published_date=date_text,
-                    is_india_specific=False
+                    is_india_specific=True
                 )
-
-                # Only include India-relevant publications
-                if self.should_include(paper):
-                    yield paper
 
         except Exception as e:
             print(f"  Error fetching UNCTAD publications: {e}")

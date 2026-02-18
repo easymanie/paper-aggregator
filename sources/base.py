@@ -70,7 +70,7 @@ def is_india_relevant(title: str, abstract: str = "", authors: str = "") -> bool
 INDIA_SOURCES = {
     'RBI', 'SEBI', 'NIPFP', 'NCAER', 'EPW', 'XKDR',
     'Vikalpa', 'IIMB Management Review', 'Decision', 'IIMK Management Review',
-    'JNU', 'CSEP', 'FICCI', 'CAG',
+    'JNU', 'CSEP', 'FICCI', 'CAG', 'UNCTAD',
 }
 
 

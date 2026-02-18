@@ -37,7 +37,7 @@ python3 serve.py --port 3000        # Custom port
 - `rbi.py`: RBI, SEBI, NIPFP, NCAER scrapers (BeautifulSoup)
 - `thinktanks.py`: ICRIER, CPR, Ashoka, IIMA, IGIDR, ISI Delhi, XKDR, JNU, CSEP, FICCI
 - `nber.py`: NBER working papers (India-filtered)
-- `unctad.py`: UNCTAD publications (India-filtered)
+- `unctad.py`: UNCTAD publications (all global)
 - `cag.py`: CAG audit reports
 
 All fetchers inherit from `BaseFetcher` and implement `fetch() -> Iterator[Paper]`.
