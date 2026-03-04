@@ -311,10 +311,24 @@ scraped_sources:
   - name: "CAG"
     enabled: true
 
+  # Additional Indian think tanks
+  - name: "ORF"
+    enabled: true
+  - name: "Carnegie India"
+    enabled: true
+  - name: "EPW"
+    enabled: true
+
   # International (India-filtered)
   - name: "NBER"
     enabled: true
   - name: "UNCTAD"
+    enabled: true
+  - name: "IMF"
+    enabled: true
+  - name: "World Bank"
+    enabled: true
+  - name: "ADB"
     enabled: true
   - name: "SSRN"
     enabled: false  # RSS feeds no longer available

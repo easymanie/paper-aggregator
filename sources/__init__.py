@@ -17,6 +17,16 @@ from .thinktanks import (
     CSEPFetcher,
     FICCIFetcher,
 )
+from .thinktanks2 import (
+    ORFFetcher,
+    CarnegieIndiaFetcher,
+    EPWFetcher,
+)
+from .international import (
+    IMFFetcher,
+    WorldBankFetcher,
+    ADBFetcher,
+)
 from .twitter import TwitterFetcher
 from .kiel import KielFetcher
 from .unctad import UNCTADFetcher
@@ -42,6 +52,12 @@ __all__ = [
     'JNUFetcher',
     'CSEPFetcher',
     'FICCIFetcher',
+    'ORFFetcher',
+    'CarnegieIndiaFetcher',
+    'EPWFetcher',
+    'IMFFetcher',
+    'WorldBankFetcher',
+    'ADBFetcher',
     'UNCTADFetcher',
     'CAGFetcher',
     'TwitterFetcher',

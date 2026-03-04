@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from typing import Iterator
 from db import Paper
 from .base import BaseFetcher
+from .thinktanks import parse_date_flexible, is_recent
 
 
 HEADERS = {
@@ -30,12 +31,12 @@ class UNCTADFetcher(BaseFetcher):
             soup = BeautifulSoup(response.content, 'lxml')
             seen_urls = set()
 
-            # Find publication links
-            for link in soup.find_all('a', href=lambda h: h and '/publication/' in h):
+            # Find all /publication/ links directly
+            for link in soup.find_all('a', href=lambda h: h and '/publication/' in str(h)):
                 href = link.get('href', '')
 
-                # Skip anchors and duplicate URLs
-                if '#' in href or href in seen_urls:
+                # Skip anchors, dashboard links, and duplicates
+                if '#' in href or '/dashboard' in href or href in seen_urls:
                     continue
 
                 title = link.get_text(strip=True)
@@ -47,17 +48,34 @@ class UNCTADFetcher(BaseFetcher):
 
                 # Try to find date from parent element
                 date_text = None
-                parent = link.find_parent(['div', 'article', 'li'])
+                parent = link.find_parent(['div', 'article', 'li', 'section'])
                 if parent:
                     parent_text = parent.get_text()
+
                     # Match "DD Mon YYYY" format
                     date_match = re.search(
                         r'(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4})',
                         parent_text
                     )
                     if date_match:
-                        from .thinktanks import parse_date_flexible
                         date_text = parse_date_flexible(date_match.group(1))
+
+                    if not date_text:
+                        date_match = re.search(
+                            r'((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+(?:\d{1,2},?\s+)?\d{4})',
+                            parent_text
+                        )
+                        if date_match:
+                            date_text = parse_date_flexible(date_match.group(1))
+
+                # Try year from URL or title
+                if not date_text:
+                    year_match = re.search(r'(202[4-9])', url) or re.search(r'(202[4-9])', title)
+                    if year_match:
+                        date_text = f"{year_match.group(1)}-01-01"
+
+                if date_text and not is_recent(date_text):
+                    continue
 
                 paper = Paper(
                     title=title,

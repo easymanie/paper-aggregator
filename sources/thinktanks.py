@@ -86,6 +86,37 @@ class ICRIERFetcher(BaseFetcher):
                 seen_urls.add(href)
                 url = href if href.startswith('http') else f"https://icrier.org{href}"
 
+                # Try to extract date from parent element
+                date_text = None
+                parent = link.find_parent(['div', 'article', 'li'])
+                if parent:
+                    parent_text = parent.get_text()
+                    # Try various date formats
+                    date_match = re.search(
+                        r'((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4})',
+                        parent_text
+                    )
+                    if date_match:
+                        date_text = parse_date_flexible(date_match.group(1))
+                    if not date_text:
+                        date_match = re.search(
+                            r'(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4})',
+                            parent_text
+                        )
+                        if date_match:
+                            date_text = parse_date_flexible(date_match.group(1))
+                    if not date_text:
+                        # Try year from URL or text
+                        year_match = re.search(r'\b(202[4-9])\b', parent_text)
+                        if year_match:
+                            date_text = f"{year_match.group(1)}-01-01"
+
+                # Try year from URL path as fallback
+                if not date_text:
+                    url_year = re.search(r'/(202[4-9])/', url)
+                    if url_year:
+                        date_text = f"{url_year.group(1)}-01-01"
+
                 yield Paper(
                     title=title,
                     authors="ICRIER",
@@ -93,6 +124,7 @@ class ICRIERFetcher(BaseFetcher):
                     url=url,
                     source="ICRIER",
                     category="economics",
+                    published_date=date_text,
                     is_india_specific=True
                 )
 
@@ -128,13 +160,46 @@ class CPRFetcher(BaseFetcher):
                 seen_urls.add(href)
                 url = href if href.startswith('http') else f"https://cprindia.org{href}"
 
-                # Try to find author in parent/sibling
+                # Try to find author and date in parent/sibling
                 authors = "CPR"
+                date_text = None
                 parent = link.find_parent(['div', 'article', 'li'])
                 if parent:
                     author_elem = parent.find(['span', 'p'], class_=lambda x: x and 'author' in str(x).lower())
                     if author_elem:
                         authors = author_elem.get_text(strip=True) or "CPR"
+
+                    # Try to find date
+                    date_elem = parent.find(['time', 'span'], class_=lambda x: x and 'date' in str(x).lower())
+                    if date_elem:
+                        date_text = parse_date_flexible(date_elem.get_text(strip=True))
+
+                    if not date_text:
+                        time_elem = parent.find('time')
+                        if time_elem and time_elem.get('datetime'):
+                            dt_str = time_elem.get('datetime', '')[:10]
+                            if re.match(r'\d{4}-\d{2}-\d{2}', dt_str):
+                                date_text = dt_str
+
+                    if not date_text:
+                        parent_text = parent.get_text()
+                        date_match = re.search(
+                            r'((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4})',
+                            parent_text
+                        )
+                        if date_match:
+                            date_text = parse_date_flexible(date_match.group(1))
+
+                    if not date_text:
+                        year_match = re.search(r'\b(202[4-9])\b', parent.get_text())
+                        if year_match:
+                            date_text = f"{year_match.group(1)}-01-01"
+
+                # Try year from URL as fallback
+                if not date_text:
+                    url_year = re.search(r'/(202[4-9])/', url)
+                    if url_year:
+                        date_text = f"{url_year.group(1)}-01-01"
 
                 yield Paper(
                     title=title,
@@ -143,6 +208,7 @@ class CPRFetcher(BaseFetcher):
                     url=url,
                     source="CPR",
                     category="policy",
+                    published_date=date_text,
                     is_india_specific=True
                 )
 
@@ -190,6 +256,33 @@ class AshokaFetcher(BaseFetcher):
                 date_elem = article.find(['time', 'span'], class_=lambda x: x and 'date' in str(x).lower())
                 if date_elem:
                     date_text = parse_date_flexible(date_elem.get_text(strip=True))
+
+                if not date_text:
+                    time_elem = article.find('time')
+                    if time_elem and time_elem.get('datetime'):
+                        dt_str = time_elem.get('datetime', '')[:10]
+                        if re.match(r'\d{4}-\d{2}-\d{2}', dt_str):
+                            date_text = dt_str
+
+                if not date_text:
+                    article_text = article.get_text()
+                    date_match = re.search(
+                        r'((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4})',
+                        article_text
+                    )
+                    if date_match:
+                        date_text = parse_date_flexible(date_match.group(1))
+
+                if not date_text:
+                    # Try year from URL
+                    url_year = re.search(r'/(202[4-9])/', url)
+                    if url_year:
+                        date_text = f"{url_year.group(1)}-01-01"
+
+                if not date_text:
+                    year_match = re.search(r'\b(202[4-9])\b', article.get_text())
+                    if year_match:
+                        date_text = f"{year_match.group(1)}-01-01"
 
                 yield Paper(
                     title=title,
@@ -276,17 +369,30 @@ class IGIDRFetcher(BaseFetcher):
         super().__init__("IGIDR", "economics")
 
     def fetch(self) -> Iterator[Paper]:
-        """Fetch papers from IGIDR via RePEc."""
+        """Fetch papers from IGIDR via RePEc, using year headings."""
         try:
             response = requests.get(self.PAPERS_URL, headers=HEADERS, timeout=30)
             response.raise_for_status()
 
             soup = BeautifulSoup(response.content, 'lxml')
             seen_urls = set()
+            current_year = None
 
-            # Find paper entries in the list
-            for li in soup.find_all('li'):
-                link = li.find('a', href=lambda h: h and '/p/ind/igiwpp/' in str(h))
+            # IDEAS/RePEc uses h3 for year headings on series pages
+            for elem in soup.find_all(['h3', 'li']):
+                if elem.name == 'h3':
+                    year_text = elem.get_text(strip=True)
+                    if year_text.isdigit():
+                        current_year = int(year_text)
+                    else:
+                        current_year = None
+                    continue
+
+                # Skip papers from before 2024 or with unknown year
+                if not current_year or current_year < 2024:
+                    continue
+
+                link = elem.find('a', href=lambda h: h and '/p/ind/igiwpp/' in str(h))
                 if not link:
                     continue
 
@@ -298,17 +404,10 @@ class IGIDRFetcher(BaseFetcher):
 
                 seen_urls.add(href)
                 url = f"https://ideas.repec.org{href}" if href.startswith('/') else href
-
-                # Extract year from text if available
-                text = li.get_text()
-                date_match = re.search(r'\b(202[4-9])\b', text)
-                date_text = f"{date_match.group(1)}-01-01" if date_match else None
-
-                # Only include recent papers
-                if date_text and not is_recent(date_text):
-                    continue
+                date_text = f"{current_year}-01-01"
 
                 # Extract authors
+                text = elem.get_text()
                 authors = "IGIDR"
                 author_match = re.search(r'by\s+(.+?)(?:\s*\(|\s*$)', text, re.IGNORECASE)
                 if author_match:
@@ -338,16 +437,29 @@ class ISIFetcher(BaseFetcher):
         super().__init__("ISI Delhi", "economics")
 
     def fetch(self) -> Iterator[Paper]:
-        """Fetch papers from ISI Delhi via RePEc."""
+        """Fetch papers from ISI Delhi via RePEc, using year headings."""
         try:
             response = requests.get(self.PAPERS_URL, headers=HEADERS, timeout=30)
             response.raise_for_status()
 
             soup = BeautifulSoup(response.content, 'lxml')
             seen_urls = set()
+            current_year = None
 
-            for li in soup.find_all('li'):
-                link = li.find('a', href=lambda h: h and '/p/alo/isipdp/' in str(h))
+            # IDEAS/RePEc uses h3 for year headings on series pages
+            for elem in soup.find_all(['h3', 'li']):
+                if elem.name == 'h3':
+                    year_text = elem.get_text(strip=True)
+                    if year_text.isdigit():
+                        current_year = int(year_text)
+                    else:
+                        current_year = None
+                    continue
+
+                if not current_year or current_year < 2024:
+                    continue
+
+                link = elem.find('a', href=lambda h: h and '/p/alo/isipdp/' in str(h))
                 if not link:
                     continue
 
@@ -359,14 +471,9 @@ class ISIFetcher(BaseFetcher):
 
                 seen_urls.add(href)
                 url = f"https://ideas.repec.org{href}" if href.startswith('/') else href
+                date_text = f"{current_year}-01-01"
 
-                text = li.get_text()
-                date_match = re.search(r'\b(202[4-9])\b', text)
-                date_text = f"{date_match.group(1)}-01-01" if date_match else None
-
-                if date_text and not is_recent(date_text):
-                    continue
-
+                text = elem.get_text()
                 authors = "ISI Delhi"
                 author_match = re.search(r'by\s+(.+?)(?:\s*\(|\s*$)', text, re.IGNORECASE)
                 if author_match:

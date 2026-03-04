@@ -472,6 +472,17 @@ def is_open_access(source: str, url: str = "") -> bool:
         'ISI Delhi',     # University working papers
         'Vikalpa',       # Open access journal
         'IIMB Management Review',  # Open access
+        'ORF',           # Think tank - open access
+        'Carnegie India', # Think tank - open access
+        'EPW',           # Journal (some open access)
+        'IMF',           # Working papers
+        'World Bank',    # Working papers
+        'ADB',           # Working papers
+        'XKDR',          # Think tank working papers
+        'JNU',           # University working papers
+        'CSEP',          # Think tank working papers
+        'FICCI',         # Industry body reports
+        'UNCTAD',        # UN agency - open access
     }
 
     if source in open_access_sources:
@@ -492,6 +503,14 @@ def is_open_access(source: str, url: str = "") -> bool:
             'igidr.ac.in',
             'isid.ac.in',
             'ideas.repec.org',  # Working paper repository
+            'orfonline.org',
+            'carnegieendowment.org',
+            'epw.in',
+            'adb.org',
+            'unctad.org',
+            'xkdr.org',
+            'csep.org',
+            'ficci.in',
         ]
         for pattern in open_access_patterns:
             if pattern in url.lower():
@@ -543,7 +562,7 @@ def create_summary(abstract: str, max_chars: int = 280) -> str:
 
     # Remove common prefixes and metadata patterns
     removal_patterns = [
-        r'^(RBI Working Paper|NIPFP Working Paper|NCAER Publication|SEBI Research|IGIDR Working Paper|ISI Delhi Discussion Paper|CPR Working Paper|ICRIER Working Paper|Ashoka University CEDA|IIM Ahmedabad Working Paper):\s*',
+        r'^(RBI Working Paper|NIPFP Working Paper|NCAER Publication|SEBI Research|IGIDR Working Paper|ISI Delhi Discussion Paper|CPR Working Paper|ICRIER Working Paper|Ashoka University CEDA|IIM Ahmedabad Working Paper|IMF Working Paper|World Bank Policy Research Working Paper|ADB South Asia Working Paper|ORF Research|Carnegie India|Economic and Political Weekly|UNCTAD Publication|FICCI Study(?:\s*\([^)]*\))?):\s*',
         r'^Abstract[:\s]*',
         r'^Summary[:\s]*',
         # Remove journal metadata like "Journal Name, Volume X, Issue Y, Page..."
@@ -675,6 +694,17 @@ def generate_dashboard(output_path: Path = None):
     # Sort topics alphabetically for the filter dropdown
     all_topics = sorted(all_topics)
 
+    # Collect available years from published_date
+    all_years = set()
+    for paper in papers:
+        pub_date = paper.get('published_date')
+        if pub_date:
+            try:
+                all_years.add(datetime.strptime(pub_date, '%Y-%m-%d').year)
+            except ValueError:
+                pass
+    all_years = sorted(all_years, reverse=True)
+
     # Sort by:
     # 1. Daily Brief fit score (how well it matches DB editorial style)
     # 2. Date (most recent first)
@@ -703,6 +733,7 @@ def generate_dashboard(output_path: Path = None):
         sources=sources,
         categories=categories,
         topics=all_topics,
+        years=all_years,
         total_papers=total_papers,
         last_updated=datetime.now().strftime("%Y-%m-%d %H:%M")
     )

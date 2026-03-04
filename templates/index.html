@@ -386,6 +386,13 @@
                 {% endfor %}
             </select>
 
+            <select id="year-filter">
+                <option value="">All Years</option>
+                {% for year in years %}
+                <option value="{{ year }}">{{ year }}</option>
+                {% endfor %}
+            </select>
+
             <label>
                 <input type="checkbox" id="hide-read"> Hide read
             </label>
@@ -410,7 +417,7 @@
 
         <div class="paper-list" id="paper-list">
             {% for paper in papers %}
-            <article class="paper" data-id="{{ paper.id }}" data-source="{{ paper.source }}" data-category="{{ paper.category }}" data-topics="{{ paper.topics | join(',') }}" data-db-score="{{ paper.daily_brief_score }}" data-covered="{{ paper.is_covered|lower }}" data-title="{{ paper.title }}" data-url="{{ paper.url }}">
+            <article class="paper" data-id="{{ paper.id }}" data-source="{{ paper.source }}" data-category="{{ paper.category }}" data-topics="{{ paper.topics | join(',') }}" data-year="{{ paper.published_date[:4] if paper.published_date else '' }}" data-db-score="{{ paper.daily_brief_score }}" data-covered="{{ paper.is_covered|lower }}" data-title="{{ paper.title }}" data-url="{{ paper.url }}">
                 <div class="paper-header">
                     <a href="{{ paper.url }}" target="_blank" class="paper-title">{{ paper.title }}</a>
                     <div class="paper-actions">
@@ -524,6 +531,7 @@
         const searchInput = document.getElementById('search');
         const sourceFilter = document.getElementById('source-filter');
         const topicFilter = document.getElementById('topic-filter');
+        const yearFilter = document.getElementById('year-filter');
         const hideReadCheckbox = document.getElementById('hide-read');
         const showStarredCheckbox = document.getElementById('show-starred');
 
@@ -531,6 +539,7 @@
             const searchTerm = searchInput.value.toLowerCase();
             const source = sourceFilter.value;
             const topic = topicFilter.value;
+            const year = yearFilter.value;
             const hideRead = hideReadCheckbox.checked;
             const showStarred = showStarredCheckbox.checked;
 
@@ -558,6 +567,11 @@
 
                 // Topic filter
                 if (topic && !paperTopics.split(',').includes(topic)) {
+                    show = false;
+                }
+
+                // Year filter
+                if (year && paper.dataset.year !== year) {
                     show = false;
                 }
 
@@ -592,6 +606,7 @@
         searchInput.addEventListener('input', applyFilters);
         sourceFilter.addEventListener('change', applyFilters);
         topicFilter.addEventListener('change', applyFilters);
+        yearFilter.addEventListener('change', applyFilters);
         hideReadCheckbox.addEventListener('change', applyFilters);
         showStarredCheckbox.addEventListener('change', applyFilters);
 

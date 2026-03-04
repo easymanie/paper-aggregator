@@ -71,6 +71,7 @@ INDIA_SOURCES = {
     'RBI', 'SEBI', 'NIPFP', 'NCAER', 'EPW', 'XKDR',
     'Vikalpa', 'IIMB Management Review', 'Decision', 'IIMK Management Review',
     'JNU', 'CSEP', 'FICCI', 'CAG',
+    'ORF', 'Carnegie India', 'ADB',
 }
 
 

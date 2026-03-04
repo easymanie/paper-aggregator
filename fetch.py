@@ -26,6 +26,12 @@ from sources import (
     JNUFetcher,
     CSEPFetcher,
     FICCIFetcher,
+    ORFFetcher,
+    CarnegieIndiaFetcher,
+    EPWFetcher,
+    IMFFetcher,
+    WorldBankFetcher,
+    ADBFetcher,
     UNCTADFetcher,
     CAGFetcher,
     TwitterFetcher,
@@ -109,6 +115,12 @@ def fetch_scraped_sources(config: dict) -> int:
         "CAG": CAGFetcher,
         "Twitter/X": TwitterFetcher,
         "Kiel Institute": KielFetcher,
+        "ORF": ORFFetcher,
+        "Carnegie India": CarnegieIndiaFetcher,
+        "EPW": EPWFetcher,
+        "IMF": IMFFetcher,
+        "World Bank": WorldBankFetcher,
+        "ADB": ADBFetcher,
     }
 
     for source in scraped:

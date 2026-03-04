@@ -13,7 +13,7 @@ COVERED_TOPICS = [
     "rbi bulletin", "non-food credit", "bank lending slowdown",
     "rbi annual report", "corporate borrowing", "market-based funding",
     "indian banking 2025", "gross npa 2.2%", "bad loans multi-decade low",
-    "rbi rate cuts 100 basis points", "monetary policy transmission",
+    "rbi rate cuts 100 basis points", "rbi rate cut transmission",
     "acquisition financing", "leveraged buyout", "lbo", "bank m&a lending",
     "ipo financing limits", "lending against shares",
 
@@ -32,16 +32,16 @@ COVERED_TOPICS = [
     "ems business", "electronics manufacturing",
     "lab-grown diamonds", "titan diamonds", "de beers",
     "lab monkeys", "pharmaceutical testing",
-    "venezuelan oil", "indian refineries", "oil imports",
+    "venezuelan oil", "indian refineries", "venezuelan oil imports",
     "coal ipo", "india coal",
     "nike", "just do it", "sportswear",
 
     # Macro/Economy
-    "outlook 2026", "2026 predictions", "ten questions 2026",
+    "daily brief outlook 2026", "2026 predictions", "ten questions 2026",
     "india gdp 2025", "india growth forecast",
     "inflation cooling", "cpi inflation", "january inflation",
     "free trade agreements", "india uk fta", "india oman fta",
-    "tariffs", "us tariffs india",
+    "us tariffs on india", "india tariff retaliation",
 
     # AI & Tech
     "us china ai", "ai competition", "hyperscalers", "ai infrastructure",
@@ -110,7 +110,7 @@ def is_topic_covered(title: str, abstract: str) -> bool:
         # If more than 50% of article words appear in title, likely covered
         if len(article_words) > 0:
             overlap = len(article_words & title_words) / len(article_words)
-            if overlap > 0.5:
+            if overlap > 0.7:
                 return True
 
     return False
