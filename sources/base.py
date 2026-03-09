@@ -72,6 +72,7 @@ INDIA_SOURCES = {
     'Vikalpa', 'IIMB Management Review', 'Decision', 'IIMK Management Review',
     'JNU', 'CSEP', 'FICCI', 'CAG',
     'ORF', 'Carnegie India', 'ADB',
+    'Azim Premji CSE', 'RIS',
 }
 
 

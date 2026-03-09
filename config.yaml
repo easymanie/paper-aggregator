@@ -256,6 +256,17 @@ journals:
     category: "management"
     india_only: true
 
+  # Heterodox / Post-Keynesian / Schumpeterian
+  - name: "Innovation and Development"
+    url: "https://www.tandfonline.com/action/showFeed?type=etoc&feed=rss&jc=riad20"
+    category: "economics"
+    india_only: true
+
+  - name: "Structural Change and Economic Dynamics"
+    url: "https://rss.sciencedirect.com/publication/science/0954349X"
+    category: "economics"
+    india_only: true
+
   # Note: Oxford Academic journals (Industrial & Corporate Change, Cambridge Journal
   # of Economics, Oxford Economic Papers) have disabled public RSS feeds.
   # These require manual monitoring or a custom scraper.
@@ -308,6 +319,8 @@ scraped_sources:
     enabled: true
   - name: "FICCI"
     enabled: true
+  - name: "Azim Premji CSE"
+    enabled: true
   - name: "CAG"
     enabled: true
 
@@ -317,6 +330,10 @@ scraped_sources:
   - name: "Carnegie India"
     enabled: true
   - name: "EPW"
+    enabled: true
+
+  # Research institutions
+  - name: "RIS"
     enabled: true
 
   # International (India-filtered)

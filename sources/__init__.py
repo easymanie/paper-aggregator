@@ -16,6 +16,8 @@ from .thinktanks import (
     JNUFetcher,
     CSEPFetcher,
     FICCIFetcher,
+    AzimPremjiCSEFetcher,
+    RISFetcher,
 )
 from .thinktanks2 import (
     ORFFetcher,
@@ -52,6 +54,8 @@ __all__ = [
     'JNUFetcher',
     'CSEPFetcher',
     'FICCIFetcher',
+    'AzimPremjiCSEFetcher',
+    'RISFetcher',
     'ORFFetcher',
     'CarnegieIndiaFetcher',
     'EPWFetcher',

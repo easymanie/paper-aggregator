@@ -788,3 +788,137 @@ class FICCIFetcher(BaseFetcher):
 
         except Exception as e:
             print(f"  Error fetching FICCI papers: {e}")
+
+
+class AzimPremjiCSEFetcher(BaseFetcher):
+    """Fetcher for Azim Premji University Centre for Sustainable Employment working papers."""
+
+    PAPERS_URL = "https://azimpremjiuniversity.edu.in/cse-working-paper-series"
+
+    def __init__(self):
+        super().__init__("Azim Premji CSE", "economics")
+
+    def fetch(self) -> Iterator[Paper]:
+        """Fetch papers from APU CSE working paper series."""
+        try:
+            response = requests.get(self.PAPERS_URL, headers=HEADERS, timeout=30)
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.content, 'lxml')
+            seen_urls = set()
+
+            # Papers are in containers with h3 titles and links to /publications/
+            for link in soup.find_all('a', href=lambda h: h and '/publications/' in h and 'cse-working-paper' in h):
+                href = link.get('href', '')
+                if href in seen_urls:
+                    continue
+
+                # Find the title - look for h3 within or near the link
+                title = None
+                h3 = link.find('h3')
+                if h3:
+                    title = h3.get_text(strip=True)
+                else:
+                    # The link itself or parent might have the title
+                    parent = link.find_parent(['div', 'article'])
+                    if parent:
+                        h3 = parent.find('h3')
+                        if h3:
+                            title = h3.get_text(strip=True)
+
+                if not title:
+                    title = link.get_text(strip=True)
+
+                if not title or len(title) < 15:
+                    continue
+
+                seen_urls.add(href)
+                url = href if href.startswith('http') else f"https://azimpremjiuniversity.edu.in{href}"
+
+                # Extract year from URL path
+                date_text = None
+                year_match = re.search(r'/(202[4-9])/', url)
+                if year_match:
+                    date_text = f"{year_match.group(1)}-01-01"
+
+                yield Paper(
+                    title=title,
+                    authors="Azim Premji CSE",
+                    abstract=f"Azim Premji University CSE Working Paper: {title}",
+                    url=url,
+                    source="Azim Premji CSE",
+                    category="economics",
+                    published_date=date_text,
+                    is_india_specific=True
+                )
+
+        except Exception as e:
+            print(f"  Error fetching Azim Premji CSE papers: {e}")
+
+
+class RISFetcher(BaseFetcher):
+    """Fetcher for Research and Information System for Developing Countries discussion papers."""
+
+    PAPERS_URL = "https://www.ris.org.in/discussion-papers"
+
+    def __init__(self):
+        super().__init__("RIS", "economics")
+
+    def fetch(self) -> Iterator[Paper]:
+        """Fetch discussion papers from RIS website."""
+        try:
+            response = requests.get(self.PAPERS_URL, headers=HEADERS, timeout=30)
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.content, 'lxml')
+            seen_urls = set()
+
+            # Find all links to individual discussion papers
+            for link in soup.find_all('a', href=lambda h: h and '/en/' in h and h != '/en/'):
+                title = link.get_text(strip=True)
+                href = link.get('href', '')
+
+                if not title or len(title) < 15 or href in seen_urls:
+                    continue
+
+                # Skip navigation/category links
+                skip_phrases = ['read more', 'view all', 'home', 'about', 'contact',
+                                'discussion papers', 'publications', 'events']
+                if title.lower() in skip_phrases:
+                    continue
+
+                seen_urls.add(href)
+                url = href if href.startswith('http') else f"https://www.ris.org.in{href}"
+
+                # Try to find date and author from parent
+                date_text = None
+                authors = "RIS"
+                parent = link.find_parent(['div', 'article', 'li'])
+                if parent:
+                    parent_text = parent.get_text()
+                    # Look for "Month, Year" or "Month Year" pattern
+                    date_match = re.search(
+                        r'((?:January|February|March|April|May|June|July|August|September|October|November|December),?\s+\d{4})',
+                        parent_text
+                    )
+                    if date_match:
+                        date_text = parse_date_flexible(date_match.group(1).replace(',', ''))
+
+                    if not date_text:
+                        year_match = re.search(r'\b(202[4-9])\b', parent_text)
+                        if year_match:
+                            date_text = f"{year_match.group(1)}-01-01"
+
+                yield Paper(
+                    title=title,
+                    authors=authors,
+                    abstract=f"RIS Discussion Paper: {title}",
+                    url=url,
+                    source="RIS",
+                    category="economics",
+                    published_date=date_text,
+                    is_india_specific=True
+                )
+
+        except Exception as e:
+            print(f"  Error fetching RIS papers: {e}")
