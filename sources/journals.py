@@ -4,8 +4,7 @@ import feedparser
 import re
 from datetime import datetime
 from typing import Iterator, Optional
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
-from db import Paper
+from db import Paper, canonicalize_url
 from .base import BaseFetcher, is_india_relevant
 
 
@@ -15,36 +14,7 @@ CUTOFF_DATE = datetime(2024, 1, 1)
 
 def clean_url(url: str) -> str:
     """Remove tracking parameters from URLs and create cleaner links."""
-    if not url:
-        return url
-
-    parsed = urlparse(url)
-
-    # Parameters to remove (tracking/RSS-related)
-    params_to_remove = {
-        'dgcid', 'af', 'ai', 'mi', 'ui', 'rss', 'utm_source', 'utm_medium',
-        'utm_campaign', 'utm_content', 'utm_term', 'fromrss'
-    }
-
-    # Parse and filter query parameters
-    query_params = parse_qs(parsed.query, keep_blank_values=True)
-    filtered_params = {
-        k: v for k, v in query_params.items()
-        if k.lower() not in params_to_remove
-    }
-
-    # Rebuild URL
-    new_query = urlencode(filtered_params, doseq=True) if filtered_params else ''
-    cleaned = urlunparse((
-        parsed.scheme,
-        parsed.netloc,
-        parsed.path,
-        parsed.params,
-        new_query,
-        ''  # Remove fragment
-    ))
-
-    return cleaned
+    return canonicalize_url(url)
 
 
 class JournalFetcher(BaseFetcher):

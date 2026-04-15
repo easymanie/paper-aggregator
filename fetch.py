@@ -194,9 +194,18 @@ def main():
     if not args.journals_only:
         total += fetch_scraped_sources(config)
 
+    removed_old = db.cleanup_old_papers()
+    removed_duplicates = db.cleanup_duplicates()
+    removed_non_papers = db.cleanup_non_papers()
+    recanonicalized_urls = db.recanonicalize_urls()
+
     # Summary
     print(f"\n{'='*50}")
     print(f"Fetch complete: {total} new papers added")
+    print(
+        f"Removed {removed_old} old papers, {removed_duplicates} duplicates, "
+        f"{removed_non_papers} non-paper pages, and updated {recanonicalized_urls} URLs"
+    )
     print(f"Total papers in database: {db.get_paper_count()}")
 
     # Generate dashboard if requested
