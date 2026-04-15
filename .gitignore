@@ -5,9 +5,6 @@ __pycache__/
 .venv/
 venv/
 
-# Database (regenerate with fetch.py)
-papers.db
-
 # IDE
 .idea/
 .vscode/
