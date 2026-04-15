@@ -335,7 +335,8 @@ class IIMAFetcher(BaseFetcher):
 
                 # Skip if text looks like navigation or menus
                 skip_phrases = ['read more', 'view all', 'home', 'faculty', 'quick links',
-                                'online payment', 'verification', 'contact', 'about', 'cat ']
+                                'online payment', 'verification', 'contact', 'about', 'cat ',
+                                'research & publications']
                 if any(skip in text.lower() for skip in skip_phrases):
                     continue
                 # Skip if it doesn't start with a quote or capital letter (likely a title)
@@ -571,17 +572,24 @@ class XKDRFetcher(BaseFetcher):
 
 
 class JNUFetcher(BaseFetcher):
-    """Fetcher for JNU CESP working papers via IDEAS/RePEc."""
+    """Fetcher for JNU CESP working papers."""
 
     PAPERS_URL = "https://ideas.repec.org/d/cejnuin.html"
+    FALLBACK_URL = "https://www.jnu.ac.in/sss/cesp_research"
 
     def __init__(self):
         super().__init__("JNU", "economics")
 
     def fetch(self) -> Iterator[Paper]:
-        """Fetch papers from JNU CESP via RePEc, using H4 year headings."""
+        """Fetch papers from JNU CESP.
+
+        The historical IDEAS/RePEc listing has become unreliable and now returns
+        404s. Try that source first, then fall back to the official JNU page.
+        """
         try:
             response = requests.get(self.PAPERS_URL, headers=HEADERS, timeout=30)
+            if response.status_code == 404:
+                raise requests.HTTPError(f"404 Client Error: Not Found for url: {self.PAPERS_URL}")
             response.raise_for_status()
 
             soup = BeautifulSoup(response.content, 'lxml')
@@ -641,7 +649,47 @@ class JNUFetcher(BaseFetcher):
                 )
 
         except Exception as e:
-            print(f"  Error fetching JNU papers: {e}")
+            print(f"  JNU RePEc source unavailable, trying official site: {e}")
+
+            try:
+                response = requests.get(self.FALLBACK_URL, headers=HEADERS, timeout=30)
+                response.raise_for_status()
+
+                soup = BeautifulSoup(response.content, 'lxml')
+                seen_urls = set()
+
+                for link in soup.find_all('a', href=True):
+                    href = link.get('href', '').strip()
+                    title = ' '.join(link.get_text(' ', strip=True).split())
+                    url = requests.compat.urljoin(self.FALLBACK_URL, href)
+
+                    if not title or len(title) < 15 or url in seen_urls:
+                        continue
+                    if not re.search(r'(paper|working paper|publication|article)', title, re.IGNORECASE):
+                        continue
+                    if re.search(r'(holiday|admission|seminar|student|staff|contact|feedback|policy|disclaimer|sitemap)', title, re.IGNORECASE):
+                        continue
+
+                    seen_urls.add(url)
+                    year_match = re.search(r'\b(202[4-9])\b', f"{title} {href}")
+                    date_text = f"{year_match.group(1)}-01-01" if year_match else None
+
+                    yield Paper(
+                        title=title,
+                        authors="JNU CESP",
+                        abstract=f"JNU CESP Research: {title}",
+                        url=url,
+                        source="JNU",
+                        category="economics",
+                        published_date=date_text,
+                        is_india_specific=True
+                    )
+
+                if not seen_urls:
+                    print("  JNU official site has no machine-readable paper listings; skipping source")
+
+            except Exception as fallback_error:
+                print(f"  Error fetching JNU papers: {fallback_error}")
 
 
 class CSEPFetcher(BaseFetcher):
@@ -883,7 +931,7 @@ class RISFetcher(BaseFetcher):
 
                 # Skip navigation/category links
                 skip_phrases = ['read more', 'view all', 'home', 'about', 'contact',
-                                'discussion papers', 'publications', 'events']
+                                'discussion papers', 'publications', 'events', 'university connect']
                 if title.lower() in skip_phrases:
                     continue
 

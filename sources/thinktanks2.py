@@ -237,6 +237,8 @@ class EPWFetcher(BaseFetcher):
                               'back issues', 'archive', 'about']
                 if title.lower().strip() in skip_words:
                     continue
+                if re.match(r'^vol\.\s*\d+,\s*issue no\.', title, re.IGNORECASE):
+                    continue
 
                 seen_urls.add(href)
                 url = href if href.startswith('http') else f"https://www.epw.in{href}"
