@@ -7,6 +7,7 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import quote_plus
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -652,6 +653,19 @@ def create_summary(abstract: str, max_chars: int = 280) -> str:
     return summary
 
 
+def get_fallback_url(paper: dict) -> str | None:
+    """Return a browser-friendly fallback search URL for blocked publishers."""
+    title = paper.get('title', '')
+
+    if not title:
+        return None
+
+    if not paper.get('is_open_access', False):
+        return f"https://www.google.com/search?q={quote_plus(title)}"
+
+    return None
+
+
 def generate_dashboard(output_path: Path = None):
     """Generate the HTML dashboard."""
 
@@ -665,10 +679,10 @@ def generate_dashboard(output_path: Path = None):
     db.init_db()
 
     # Get data
-    papers = db.get_all_papers()
+    papers = db.get_all_papers(limit=None)
     sources = db.get_sources()
     categories = db.get_categories()
-    total_papers = db.get_paper_count()
+    total_papers = len(papers)
 
     # Enrich papers with DOI, summary, relevance score, and topics
     all_topics = set()
@@ -689,6 +703,7 @@ def generate_dashboard(output_path: Path = None):
         paper['daily_brief_score'] = calculate_daily_brief_score(paper)
         paper['daily_brief_fit'] = calculate_daily_brief_fit_score(paper)
         paper['is_open_access'] = is_open_access(paper.get('source', ''), paper.get('url', ''))
+        paper['fallback_url'] = get_fallback_url(paper)
         all_topics.update(paper['topics'])
 
     # Sort topics alphabetically for the filter dropdown

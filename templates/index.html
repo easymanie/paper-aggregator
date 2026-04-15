@@ -133,7 +133,8 @@
             flex-shrink: 0;
         }
 
-        .paper-actions button {
+        .paper-actions button,
+        .paper-actions a {
             background: none;
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -141,9 +142,12 @@
             cursor: pointer;
             font-size: 0.8rem;
             transition: all 0.2s;
+            color: inherit;
+            text-decoration: none;
         }
 
-        .paper-actions button:hover {
+        .paper-actions button:hover,
+        .paper-actions a:hover {
             background: #f0f0f0;
         }
 
@@ -421,6 +425,9 @@
                 <div class="paper-header">
                     <a href="{{ paper.url }}" target="_blank" class="paper-title">{{ paper.title }}</a>
                     <div class="paper-actions">
+                        {% if paper.fallback_url %}
+                        <a href="{{ paper.fallback_url }}" target="_blank">Search</a>
+                        {% endif %}
                         <button class="star-btn" onclick="toggleStar({{ paper.id }})">Star</button>
                         <button class="read-btn" onclick="toggleRead({{ paper.id }})">Read</button>
                     </div>
