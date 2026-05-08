@@ -264,9 +264,17 @@ class NIPFPFetcher(BaseFetcher):
 
 
 class NCAERFetcher(BaseFetcher):
-    """Fetcher for NCAER publications."""
+    """Fetcher for NCAER reports (books/reports, working papers, flagship publications)."""
 
-    PAPERS_URL = "https://ncaer.org/publication"
+    API_URL = "https://ncaer.org/wp-json/wp/v2/publication"
+
+    # publication-category-<slug> values to keep. Excludes op-eds, blogs,
+    # newsletters, journal articles, and other non-report content.
+    REPORT_CATEGORIES = {
+        'books-reports',
+        'working-papers',
+        'flagship-publication',
+    }
 
     HEADERS = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -276,38 +284,62 @@ class NCAERFetcher(BaseFetcher):
         super().__init__("NCAER", "economics")
 
     def fetch(self) -> Iterator[Paper]:
-        """Fetch papers from NCAER website."""
-        try:
-            response = requests.get(self.PAPERS_URL, headers=self.HEADERS, timeout=30)
-            response.raise_for_status()
+        """Fetch reports from NCAER WP REST API."""
+        seen_urls = set()
+        for page in range(1, 6):  # up to ~500 newest publications
+            try:
+                response = requests.get(
+                    self.API_URL,
+                    params={'per_page': 100, 'page': page, '_embed': 0},
+                    headers=self.HEADERS,
+                    timeout=30,
+                )
+                if response.status_code == 400:
+                    break  # past last page
+                response.raise_for_status()
+                items = response.json()
+            except Exception as e:
+                print(f"  Error fetching NCAER page {page}: {e}")
+                return
 
-            soup = BeautifulSoup(response.content, 'lxml')
-            seen_urls = set()
+            if not items:
+                break
 
-            # Find publication links
-            for link in soup.find_all('a', href=True):
-                href = link.get('href', '')
-                text = link.get_text(strip=True)
-
-                if not text or len(text) < 20:
+            for item in items:
+                cats = {
+                    c.replace('publication-category-', '')
+                    for c in item.get('class_list', [])
+                    if c.startswith('publication-category-')
+                }
+                if not cats & self.REPORT_CATEGORIES:
                     continue
-                if href in seen_urls:
+
+                url = item.get('link', '')
+                if not url or url in seen_urls:
+                    continue
+                seen_urls.add(url)
+
+                title = BeautifulSoup(
+                    item.get('title', {}).get('rendered', ''), 'lxml'
+                ).get_text(strip=True)
+                if not title or len(title) < 10:
                     continue
 
-                # NCAER publication URLs contain '/publication/' followed by slug
-                if '/publication/' in href and not href.rstrip('/').endswith('/publication'):
-                    seen_urls.add(href)
-                    url = href if href.startswith('http') else f"https://ncaer.org{href}"
+                excerpt_html = item.get('excerpt', {}).get('rendered', '')
+                excerpt = BeautifulSoup(excerpt_html, 'lxml').get_text(' ', strip=True)
+                kind = next(iter(cats & self.REPORT_CATEGORIES))
+                kind_label = kind.replace('-', ' ').title()
+                abstract = excerpt or f"NCAER {kind_label}: {title}"
 
-                    yield Paper(
-                        title=text,
-                        authors="NCAER",
-                        abstract=f"NCAER Publication: {text}",
-                        url=url,
-                        source="NCAER",
-                        category="economics",
-                        is_india_specific=True
-                    )
+                date_str = (item.get('date') or '')[:10] or None
 
-        except Exception as e:
-            print(f"  Error fetching NCAER papers: {e}")
+                yield Paper(
+                    title=title,
+                    authors="NCAER",
+                    abstract=abstract,
+                    url=url,
+                    source="NCAER",
+                    category="economics",
+                    published_date=date_str,
+                    is_india_specific=True,
+                )

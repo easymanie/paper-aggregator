@@ -482,7 +482,6 @@ def is_open_access(source: str, url: str = "") -> bool:
         'XKDR',          # Think tank working papers
         'JNU',           # University working papers
         'CSEP',          # Think tank working papers
-        'FICCI',         # Industry body reports
         'UNCTAD',        # UN agency - open access
     }
 
@@ -511,7 +510,6 @@ def is_open_access(source: str, url: str = "") -> bool:
             'unctad.org',
             'xkdr.org',
             'csep.org',
-            'ficci.in',
         ]
         for pattern in open_access_patterns:
             if pattern in url.lower():
@@ -563,7 +561,7 @@ def create_summary(abstract: str, max_chars: int = 280) -> str:
 
     # Remove common prefixes and metadata patterns
     removal_patterns = [
-        r'^(RBI Working Paper|NIPFP Working Paper|NCAER Publication|SEBI Research|IGIDR Working Paper|ISI Delhi Discussion Paper|CPR Working Paper|ICRIER Working Paper|Ashoka University CEDA|IIM Ahmedabad Working Paper|IMF Working Paper|World Bank Policy Research Working Paper|ADB South Asia Working Paper|ORF Research|Carnegie India|Economic and Political Weekly|UNCTAD Publication|FICCI Study(?:\s*\([^)]*\))?):\s*',
+        r'^(RBI Working Paper|NIPFP Working Paper|NCAER Publication|SEBI Research|IGIDR Working Paper|ISI Delhi Discussion Paper|CPR Working Paper|ICRIER Working Paper|Ashoka University CEDA|IIM Ahmedabad Working Paper|IMF Working Paper|World Bank Policy Research Working Paper|ADB South Asia Working Paper|ORF Research|Carnegie India|Economic and Political Weekly|UNCTAD Publication):\s*',
         r'^Abstract[:\s]*',
         r'^Summary[:\s]*',
         # Remove journal metadata like "Journal Name, Volume X, Issue Y, Page..."

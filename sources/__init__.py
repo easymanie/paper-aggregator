@@ -15,7 +15,6 @@ from .thinktanks import (
     XKDRFetcher,
     JNUFetcher,
     CSEPFetcher,
-    FICCIFetcher,
     AzimPremjiCSEFetcher,
     RISFetcher,
 )
@@ -53,7 +52,6 @@ __all__ = [
     'XKDRFetcher',
     'JNUFetcher',
     'CSEPFetcher',
-    'FICCIFetcher',
     'AzimPremjiCSEFetcher',
     'RISFetcher',
     'ORFFetcher',

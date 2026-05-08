@@ -41,7 +41,7 @@ All fetchers subclass `BaseFetcher` and implement `fetch() -> Iterator[Paper]`. 
 Fetcher files are split by origin:
 - `journals.py` — all RSS-based journal feeds via `JournalFetcher`
 - `rbi.py` — RBI, SEBI, NIPFP, NCAER
-- `thinktanks.py` — ICRIER, CPR, Ashoka CEDA, IIMA, IGIDR, ISI Delhi, XKDR, JNU, CSEP, FICCI, Azim Premji CSE, RIS
+- `thinktanks.py` — ICRIER, CPR, Ashoka CEDA, IIMA, IGIDR, ISI Delhi, XKDR, JNU, CSEP, Azim Premji CSE, RIS
 - `thinktanks2.py` — ORF, Carnegie India, EPW (added after `thinktanks.py` grew too large)
 - `international.py` — IMF, World Bank, ADB
 - `nber.py`, `unctad.py`, `cag.py`, `ssrn.py`, `kiel.py`, `twitter.py` — one source per file
