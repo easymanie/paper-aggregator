@@ -3,7 +3,7 @@
 from .base import BaseFetcher, is_india_relevant
 from .journals import JournalFetcher
 from .nber import NBERFetcher
-from .rbi import RBIFetcher, SEBIFetcher, NIPFPFetcher, NCAERFetcher
+from .rbi import RBIFetcher, SEBIFetcher, NIPFPFetcher
 from .ssrn import SSRNFetcher
 from .thinktanks import (
     ICRIERFetcher,
@@ -41,7 +41,6 @@ __all__ = [
     'RBIFetcher',
     'SEBIFetcher',
     'NIPFPFetcher',
-    'NCAERFetcher',
     'SSRNFetcher',
     'ICRIERFetcher',
     'CPRFetcher',

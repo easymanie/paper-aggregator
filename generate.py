@@ -185,7 +185,7 @@ def calculate_relevance_score(title: str, abstract: str, category: str, source: 
         score += 5
 
     # Source bonus (Indian policy/finance institutions)
-    high_value_sources = ['RBI', 'SEBI', 'NIPFP', 'NCAER', 'IGIDR', 'NBER']
+    high_value_sources = ['RBI', 'SEBI', 'NIPFP', 'IGIDR', 'NBER']
     if source in high_value_sources:
         score += 10
 
@@ -226,7 +226,6 @@ def calculate_daily_brief_score(paper: dict) -> int:
         'RBI': 40,           # Official central bank - highest credibility
         'SEBI': 35,          # Markets regulator
         'NIPFP': 30,         # Top policy think tank
-        'NCAER': 30,         # Economic research
         'NBER': 35,          # Top global working papers
         'IGIDR': 25,         # Academic institution
         'ISI Delhi': 25,     # Statistical research
@@ -400,7 +399,7 @@ def calculate_daily_brief_fit_score(paper: dict) -> int:
         score += 35
     elif source in ['NBER', 'Quarterly Journal of Economics']:
         score += 25  # Top economics research
-    elif source in ['NIPFP', 'NCAER']:
+    elif source == 'NIPFP':
         score += 15  # Policy think tanks
     elif source in ['IGIDR', 'ISI Delhi']:
         score += 5   # Academic but sometimes relevant
@@ -463,7 +462,6 @@ def is_open_access(source: str, url: str = "") -> bool:
         'RBI',           # Central bank - all public
         'SEBI',          # Regulator - all public
         'NIPFP',         # Think tank working papers
-        'NCAER',         # Think tank working papers
         'NBER',          # Working papers (free access)
         'ICRIER',        # Think tank working papers
         'CPR',           # Think tank working papers
@@ -495,7 +493,6 @@ def is_open_access(source: str, url: str = "") -> bool:
             'rbi.org.in',
             'sebi.gov.in',
             'nipfp.org.in',
-            'ncaer.org',
             'icrier.org',
             'cprindia.org',
             'ashoka.edu.in',
