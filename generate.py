@@ -715,21 +715,25 @@ def generate_dashboard(output_path: Path = None):
                 pass
     all_years = sorted(all_years, reverse=True)
 
-    # Sort by:
-    # 1. Daily Brief fit score (how well it matches DB editorial style)
-    # 2. Date (most recent first)
-    # 3. Open access (free papers first)
+    # Sort by time-decayed Daily Brief fit score so fresh papers surface naturally.
+    # Half-life = 14 days: a paper loses half its effective score every two weeks.
+    today = datetime.utcnow()
+
     def get_sort_date(p):
         date_str = p.get('published_date') or p.get('fetched_date') or '1900-01-01'
         try:
-            return datetime.strptime(date_str, '%Y-%m-%d').timestamp()
+            return datetime.strptime(date_str, '%Y-%m-%d')
         except ValueError:
-            return 0
+            return datetime(1900, 1, 1)
+
+    def decayed_score(p):
+        age_days = max(0, (today - get_sort_date(p)).days)
+        decay = 0.5 ** (age_days / 14)
+        return p.get('daily_brief_fit', 0) * decay
 
     papers.sort(key=lambda p: (
-        -p.get('daily_brief_fit', 0),         # Daily Brief editorial fit first
-        -get_sort_date(p),                    # Then most recent first
-        -int(p.get('is_open_access', False)), # Then free papers before paywalled
+        -decayed_score(p),
+        -int(p.get('is_open_access', False)),
     ))
 
     # Set up Jinja2
